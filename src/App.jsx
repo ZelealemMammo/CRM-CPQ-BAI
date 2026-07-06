@@ -2,28 +2,32 @@ import React, { useState, useEffect } from "react";
 import { Copy, Download, DollarSign, Radar, Wrench, Search, Factory, Flame, Grid3X3, ClipboardCheck, AlertTriangle, RefreshCw, ShieldCheck, Handshake, Plane, LayoutDashboard, Target, Building2, Users, CheckSquare, Plus, X, Pencil, Trash2, Filter, RotateCcw, UserPlus, TrendingUp, BarChart3, ArrowRight, Phone, Mail, CalendarDays, MessageSquare, Settings, LogOut, Lock, Eye, Package, FileText, Check, ChevronDown, ChevronUp, Send } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
-/* BAI Africa CRM v15 — workflow governance: scoped lead gen, catalog */
-/* ops role, meeting-notes, owner-based commission + AD override,      */
-/* cross-territory agreements, mandatory RFQ date, approval e-mail     */
-/* intents, collection aging, repeat-order reference, Finance payouts  */
+/* BAI Africa CRM v32 - proper branded login landing page (split hero /  */
+/* sign-in layout) replacing the plain profile-tap box, responsive down */
+/* to mobile; still simulated selection - real auth needs the Supabase  */
+/* backend covered separately                                           */
 /* Product catalog · Quote builder · Discount approval workflow        */
 /* Chain: Area Director → COO → CEO → President (by discount %)        */
 /* Persistent via window.storage (key: bai_crm_v4, migrates v3/v2/v1)  */
 /* ------------------------------------------------------------------ */
 
-/* Storage shim: uses the browser's localStorage when deployed standalone (outside Claude). */
-if (typeof window !== "undefined" && !window.storage) {
-  window.storage = {
-    async get(key) {
-      const v = localStorage.getItem(key);
-      if (v === null) throw new Error("Key not found");
-      return { key, value: v };
-    },
-    async set(key, value) { localStorage.setItem(key, value); return { key, value }; },
-    async delete(key) { localStorage.removeItem(key); return { key, deleted: true }; },
-  };
-}
-
+const KEY_V32 = "bai_crm_v32";
+const KEY_V31 = "bai_crm_v31";
+const KEY_V30 = "bai_crm_v30";
+const KEY_V29 = "bai_crm_v29";
+const KEY_V28 = "bai_crm_v28";
+const KEY_V27 = "bai_crm_v27";
+const KEY_V26 = "bai_crm_v26";
+const KEY_V25 = "bai_crm_v25";
+const KEY_V24 = "bai_crm_v24";
+const KEY_V23 = "bai_crm_v23";
+const KEY_V22 = "bai_crm_v22";
+const KEY_V21 = "bai_crm_v21";
+const KEY_V20 = "bai_crm_v20";
+const KEY_V19 = "bai_crm_v19";
+const KEY_V18 = "bai_crm_v18";
+const KEY_V17 = "bai_crm_v17";
+const KEY_V16 = "bai_crm_v16";
 const KEY_V15 = "bai_crm_v15";
 const KEY_V14 = "bai_crm_v14";
 const KEY_V13 = "bai_crm_v13";
@@ -145,6 +149,100 @@ const fleetSuggest = (type) => {
 };
 
 /* Indicative fleet compositions (public sources, 2025) — VERIFY before customer use */
+const REVENUE_SEED = {
+  a21: { total: 164834, lastActive: "07-2026", monthly: { "01-2025": 2459, "02-2025": 12385, "06-2025": 12984, "08-2025": 9426, "10-2025": 4640, "11-2025": 850, "12-2025": 4030, "02-2026": 1890, "03-2026": 800, "04-2026": 4600, "05-2026": 52200, "06-2026": 51870, "07-2026": 6700 } },
+  a23: { total: 0, lastActive: null, monthly: {  } },
+  a54: { total: 0, lastActive: null, monthly: {  } },
+  a53: { total: 324326, lastActive: "06-2026", monthly: { "01-2025": 63174, "02-2025": 18650, "03-2025": 1000, "04-2025": 6225, "05-2025": 2500, "06-2025": 18920, "07-2025": 30977, "08-2025": 5950, "09-2025": 122944, "11-2025": 31145, "12-2025": 600, "03-2026": 15762, "04-2026": 4530, "06-2026": 1950 } },
+  a55: { total: 1485, lastActive: "06-2025", monthly: { "03-2025": 1160, "06-2025": 325 } },
+  a52: { total: 53966, lastActive: "07-2026", monthly: { "01-2025": 4100, "05-2025": 1150, "06-2025": 22382, "07-2025": 725, "08-2025": 200, "10-2025": 150, "11-2025": 300, "12-2025": 8000, "01-2026": 1469, "03-2026": 5598, "04-2026": 5587, "05-2026": 3165, "06-2026": 400, "07-2026": 740 } },
+  a32: { total: 7154, lastActive: "04-2025", monthly: { "03-2025": 6904, "04-2025": 250 } },
+  a27: { total: 526058, lastActive: "05-2026", monthly: { "01-2025": 82485, "02-2025": 40433, "03-2025": 73935, "04-2025": 21300, "05-2025": 2320, "06-2025": 14495, "07-2025": 30780, "08-2025": 42030, "11-2025": 19290, "12-2025": 22700, "01-2026": 625, "02-2026": 47804, "03-2026": 113900, "04-2026": 7110, "05-2026": 6850 } },
+  a56: { total: 0, lastActive: null, monthly: {  } },
+  a26: { total: 5880, lastActive: "04-2026", monthly: { "07-2025": 2105, "03-2026": 850, "04-2026": 2925 } },
+  a31: { total: 96467, lastActive: "07-2026", monthly: { "05-2025": 4642, "06-2025": 8606, "07-2025": 10383, "08-2025": 23189, "09-2025": 10990, "10-2025": 608, "11-2025": 990, "12-2025": 2813, "02-2026": 202, "03-2026": 840, "06-2026": 8609, "07-2026": 24595 } },
+  a30: { total: 0, lastActive: null, monthly: {  } },
+  a29: { total: 328957, lastActive: "05-2026", monthly: { "01-2025": 100, "02-2025": 140761, "03-2025": 2344, "04-2025": 15804, "05-2025": 64109, "06-2025": 4470, "07-2025": 5060, "08-2025": 28462, "09-2025": 9835, "10-2025": 350, "11-2025": 1152, "01-2026": 1100, "02-2026": 7880, "03-2026": 9950, "04-2026": 36740, "05-2026": 839 } },
+  a28: { total: 26943, lastActive: "03-2026", monthly: { "03-2025": 344, "05-2025": 5341, "06-2025": 678, "07-2025": 6450, "08-2025": 2105, "09-2025": 2280, "12-2025": 600, "01-2026": 2450, "03-2026": 6695 } },
+  a35: { total: 36520, lastActive: "11-2025", monthly: { "02-2025": 14657, "03-2025": 15123, "05-2025": 1000, "06-2025": 3974, "08-2025": 1280, "11-2025": 485 } },
+  a37: { total: 12298, lastActive: "02-2026", monthly: { "01-2026": 7079, "02-2026": 5219 } },
+  a36: { total: 110274, lastActive: "05-2026", monthly: { "01-2025": 26307, "02-2025": 8540, "03-2025": 27774, "04-2025": 5205, "06-2025": 3838, "08-2025": 1400, "09-2025": 310, "10-2025": 505, "12-2025": 5195, "01-2026": 2820, "02-2026": 4990, "03-2026": 10350, "05-2026": 13040 } },
+  a45: { total: 11168, lastActive: "06-2026", monthly: { "11-2025": 9415, "03-2026": 1513, "06-2026": 240 } },
+  a13: { total: 85924, lastActive: "07-2026", monthly: { "04-2026": 4220, "05-2026": 78800, "06-2026": 1395, "07-2026": 1510 } },
+  a42: { total: 25505, lastActive: "05-2026", monthly: { "02-2026": 640, "03-2026": 6255, "04-2026": 1800, "05-2026": 16810 } },
+  a39: { total: 28861, lastActive: "06-2026", monthly: { "01-2026": 6610, "02-2026": 1150, "03-2026": 4045, "04-2026": 8230, "05-2026": 1860, "06-2026": 6965 } },
+  a47: { total: 216086, lastActive: "06-2026", monthly: { "01-2025": 8735, "02-2025": 9925, "03-2025": 7655, "04-2025": 3695, "05-2025": 8090, "06-2025": 7290, "07-2025": 7925, "08-2025": 9236, "09-2025": 22710, "10-2025": 14400, "11-2025": 3592, "12-2025": 3937, "01-2026": 10076, "02-2026": 290, "03-2026": 24060, "04-2026": 24748, "05-2026": 12589, "06-2026": 37133 } },
+  a6: { total: 241671, lastActive: "06-2026", monthly: { "01-2025": 2248, "02-2025": 13685, "03-2025": 13100, "04-2025": 18655, "05-2025": 1125, "06-2025": 4900, "07-2025": 41608, "08-2025": 9860, "09-2025": 7500, "10-2025": 27860, "11-2025": 5190, "12-2025": 27065, "01-2026": 7730, "02-2026": 2760, "03-2026": 3700, "04-2026": 45235, "05-2026": 6655, "06-2026": 2795 } },
+  a48: { total: 829680, lastActive: "06-2026", monthly: { "01-2025": 36560, "02-2025": 85210, "03-2025": 71550, "04-2025": 25080, "05-2025": 30050, "06-2025": 11240, "07-2025": 43240, "08-2025": 71750, "09-2025": 8700, "11-2025": 79090, "12-2025": 7700, "01-2026": 48820, "02-2026": 181100, "03-2026": 66060, "04-2026": 16730, "05-2026": 5200, "06-2026": 41600 } },
+  a49: { total: 250837, lastActive: "07-2026", monthly: { "02-2025": 6586, "03-2025": 23913, "04-2025": 53764, "05-2025": 17204, "07-2025": 951, "11-2025": 950, "12-2025": 53759, "02-2026": 34546, "03-2026": 8569, "04-2026": 12714, "06-2026": 26829, "07-2026": 11052 } },
+  a50: { total: 448059, lastActive: "06-2026", monthly: { "01-2025": 2438, "02-2025": 2623, "03-2025": 18674, "04-2025": 59343, "05-2025": 40265, "06-2025": 67081, "07-2025": 12461, "08-2025": 7200, "09-2025": 8033, "10-2025": 8543, "11-2025": 26033, "12-2025": 6911, "01-2026": 45945, "04-2026": 30983, "05-2026": 44648, "06-2026": 66878 } },
+  a4: { total: 166182, lastActive: "06-2026", monthly: { "01-2025": 3350, "02-2025": 45122, "03-2025": 5157, "07-2025": 5600, "09-2025": 5000, "10-2025": 5900, "11-2025": 72103, "03-2026": 2100, "04-2026": 2100, "05-2026": 2100, "06-2026": 17650 } },
+  a1: { total: 289613, lastActive: "06-2026", monthly: { "01-2025": 3800, "02-2025": 10050, "03-2025": 6500, "04-2025": 15186, "05-2025": 36037, "06-2025": 1910, "07-2025": 39311, "08-2025": 2325, "10-2025": 22130, "11-2025": 975, "12-2025": 1300, "01-2026": 466, "02-2026": 11844, "03-2026": 104533, "04-2026": 19921, "06-2026": 13324 } },
+  a57: { total: 0, lastActive: null, monthly: {  } },
+  a12: { total: 0, lastActive: null, monthly: {  } },
+  a3: { total: 299447, lastActive: "07-2026", monthly: { "01-2025": 32539, "02-2025": 21094, "03-2025": 60082, "04-2025": 3471, "06-2025": 2165, "07-2025": 6300, "09-2025": 25279, "11-2025": 1188, "02-2026": 8000, "04-2026": 3550, "05-2026": 133800, "07-2026": 1980 } },
+  a51: { total: 0, lastActive: null, monthly: {  } },
+};
+
+const FUNNEL_SEED = {
+  months: ["01-2025", "02-2025", "03-2025", "04-2025", "05-2025", "06-2025", "07-2025", "08-2025", "09-2025", "10-2025", "11-2025", "12-2025", "01-2026", "02-2026", "03-2026", "04-2026", "05-2026", "06-2026", "07-2026"],
+  rfqUniquePN: [12, 24, 33, 107, 25, 22, 64, 28, 29, 70, 34, 83, 40, 26, 65, 32, 24, 28, 2],
+  quotedUniquePN: [10, 20, 13, 84, 21, 18, 63, 26, 22, 50, 22, 53, 35, 20, 65, 22, 19, 23, 2],
+  quotedValueUniquePN: [384890, 347929, 426230, 195428, 81874, 145795, 320050, 221894, 164820, 252535, 276736, 492040, 949815, 166879, 386020, 376450, 220520, 1339310, 11500],
+  totalQuotesCount: [6, 14, 10, 13, 6, 7, 20, 13, 14, 13, 10, 22, 13, 13, 13, 12, 11, 13, 2],
+  totalQuotesValue: [393300, 375814, 763490, 242100, 153324, 182595, 346900, 292874, 224000, 290195, 412636, 751340, 966815, 166879, 386020, 446240, 250470, 2405110, 11500],
+  totalSOCount: [1, 3, 0, 0, 0, 2, 1, 2, 0, 1, 1, 2, 0, 1, 1, 1, 4, 2, 1],
+  totalSOValue: [4390, 7995, 0, 0, 0, 14100, 840, 8310, 0, 3800, 1800, 3080, 0, 1890, 800, 4600, 91170, 12900, 6700],
+  totalInvoices: [2459, 12385, 0, 0, 0, 12984, 0, 9426, 0, 4640, 850, 4030, 0, 1890, 800, 4600, 52200, 51870, 6700],
+};
+
+/* Report classification & distribution — mirrors document-handling convention.
+   Each role has a ceiling on how sensitive a report it may generate or receive. */
+const MONTH_ORD = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+const monthKey = (m) => { const [mm, yy] = m.split("-"); return Number(yy) * 12 + MONTH_ORD.indexOf(mm); };
+const monthInRange = (m, from, to) => (!from || monthKey(m) >= monthKey(from)) && (!to || monthKey(m) <= monthKey(to));
+/* Slice FUNNEL_SEED's parallel arrays down to a date range, preserving alignment. */
+const filterFunnel = (from, to) => {
+  const idx = FUNNEL_SEED.months.map((m, i) => (monthInRange(m, from, to) ? i : -1)).filter((i) => i >= 0);
+  const pick = (arr) => idx.map((i) => arr[i]);
+  return {
+    months: pick(FUNNEL_SEED.months), rfqUniquePN: pick(FUNNEL_SEED.rfqUniquePN), quotedUniquePN: pick(FUNNEL_SEED.quotedUniquePN),
+    quotedValueUniquePN: pick(FUNNEL_SEED.quotedValueUniquePN), totalQuotesCount: pick(FUNNEL_SEED.totalQuotesCount), totalQuotesValue: pick(FUNNEL_SEED.totalQuotesValue),
+    totalSOCount: pick(FUNNEL_SEED.totalSOCount), totalSOValue: pick(FUNNEL_SEED.totalSOValue), totalInvoices: pick(FUNNEL_SEED.totalInvoices),
+  };
+};
+
+const CLASSIFICATIONS = ["Public", "Internal", "Confidential", "Restricted"];
+const CLASS_COLOR = { Public: "#256E4E", Internal: "#14538C", Confidential: "#B8720F", Restricted: "#A63A3A" };
+const CLASS_CEILING = {
+  "Area Director": "Restricted", "Finance": "Restricted",
+  "COO": "Confidential", "CEO": "Confidential", "President": "Confidential",
+  "Territory Manager (BD)": "Internal", "Analyst": "Internal", "Operations": "Internal",
+};
+const classRank = (c) => CLASSIFICATIONS.indexOf(c);
+const maxClassFor = (role) => CLASS_CEILING[role] || "Public";
+
+/* Report sections — each can require a minimum classification and/or specific roles. */
+const REPORT_SECTIONS = [
+  { id: "kpis", label: "Executive KPIs (win rate, cycle time, avg deal size)", minClass: "Public" },
+  { id: "revenue", label: "Historic invoiced revenue trend", minClass: "Internal" },
+  { id: "monthlyDetail", label: "Monthly tracking — revenue & funnel, month by month", minClass: "Internal" },
+  { id: "stageTracking", label: "Sales stage tracking by month", minClass: "Internal" },
+  { id: "invoiceAging", label: "Invoice collection & aging (AR)", minClass: "Internal" },
+  { id: "repDetail", label: "Detailed breakdown — per rep (named)", minClass: "Confidential" },
+  { id: "productDetail", label: "Detailed breakdown — per product line", minClass: "Internal" },
+  { id: "accountDetail", label: "Detailed breakdown — per airline / account (full list)", minClass: "Internal" },
+  { id: "aircraftDetail", label: "Detailed breakdown — per aircraft model", minClass: "Internal" },
+  { id: "rawMatrix", label: "Raw invoice data — account × month (full detail, no summarizing)", minClass: "Internal" },
+  { id: "funnel", label: "BD funnel — RFQ / Quoted / Sales Order / Invoiced", minClass: "Internal" },
+  { id: "topAccounts", label: "Top accounts by invoiced revenue", minClass: "Internal" },
+  { id: "region", label: "Open pipeline by region", minClass: "Public" },
+  { id: "product", label: "Open pipeline by product line", minClass: "Public" },
+  { id: "owner", label: "Open pipeline by owner (named reps)", minClass: "Confidential" },
+  { id: "loss", label: "Lost deal reasons", minClass: "Internal" },
+  { id: "commission", label: "Commission summary (Finance/Area Director only)", minClass: "Restricted", roles: ["Area Director", "Finance"] },
+];
+
 const FLEET_SEED = {
   /* Verified mid-2026 where sourced (ET factsheet 04/2026: 170+ a/c avg age 7y; KQ ch-aviation/AeroTime 01/2026: ~34 a/c). Others indicative — verify. */
   a1: [{ type: "B787", count: 30, engine: "GEnx" }, { type: "A350", count: 28, engine: "Trent XWB" }, { type: "B777 (pax+F)", count: 28, engine: "GE90" }, { type: "B737NG/MAX", count: 46, engine: "CFM56/LEAP-1B" }, { type: "DHC-8 Q400", count: 30, engine: "PW150A" }, { type: "B767", count: 4, engine: "CF6" }],
@@ -272,7 +370,21 @@ const commissionShare = (d, userId, roleOf) => {
 };
 /* Legacy alias used where only a flat total (not owner-split) is needed, e.g. quick previews. */
 const dealCommission = (d, ownerRole) => dealDirectCommission(d, ownerRole);
-const dealWeighted = (d) => dealValue(d) * ((d.prob ?? STAGE_PROB[d.stage] ?? 0) / 100);
+const dealWeighted = (d, stageProbMap = STAGE_PROB) => dealValue(d) * ((d.prob ?? stageProbMap[d.stage] ?? 0) / 100);
+/* Given "Q3 2026", returns the three "MM-YYYY" months that make up that quarter. */
+const monthToQuarter = (m) => {
+  const [mm, yy] = m.split("-");
+  return `Q${Math.ceil(Number(mm) / 3)} ${yy}`;
+};
+
+const monthsInQuarter = (q) => {
+  if (!q) return [];
+  const [qLabel, year] = q.split(" ");
+  const qNum = Number(qLabel.replace("Q", ""));
+  const startMonth = (qNum - 1) * 3 + 1;
+  return [0, 1, 2].map((i) => String(startMonth + i).padStart(2, "0") + "-" + year);
+};
+
 const quarterOf = (dateStr) => {
   if (!dateStr) return "No date";
   const [y, m] = dateStr.split("-").map(Number);
@@ -284,6 +396,143 @@ const quoteSubtotal = (q) => (q.lines || []).reduce((s, l) => s + (Number(l.qty)
 const quoteNet = (q) => quoteSubtotal(q) * (1 - (Number(q.discountPct) || 0) / 100);
 const TERMS_DAYS = { "Cash on Order": 0, "Cash on Delivery": 0, "Net 20 days": 20, "Net 45 days": 45, "Net 60 days": 60 };
 /* Expected collection date follows the accepted quote's payment terms from the deal's close date. */
+/* Sales-stage tracking by month, built from each deal's stageHistory log.
+   Deals that predate this feature carry one baseline entry (their stage as
+   of when logging began) rather than a true transition history — noted in
+   the report. */
+const buildStageTracking = (deals, dateFrom, dateTo) => {
+  const rows = {}; // month -> stage -> {count, value}
+  deals.forEach((d) => {
+    const val = dealValue(d);
+    (d.stageHistory || []).forEach((h) => {
+      if (!h.date) return;
+      const m = h.date.slice(5, 7) + "-" + h.date.slice(0, 4);
+      if (!monthInRange(m, dateFrom, dateTo)) return;
+      rows[m] = rows[m] || {};
+      rows[m][h.stage] = rows[m][h.stage] || { count: 0, value: 0 };
+      rows[m][h.stage].count += 1;
+      rows[m][h.stage].value += val;
+    });
+  });
+  const months = Object.keys(rows).sort((a, b) => monthKey(a) - monthKey(b));
+  return { months, rows };
+};
+
+/* Standard AR aging buckets, computed against each Won deal's expected
+   collection date (from its accepted quote's payment terms). */
+const AGING_BUCKETS = ["Current", "1-30 days", "31-60 days", "61-90 days", "90+ days"];
+const agingBucketFor = (daysOverdue) => {
+  if (daysOverdue <= 0) return "Current";
+  if (daysOverdue <= 30) return "1-30 days";
+  if (daysOverdue <= 60) return "31-60 days";
+  if (daysOverdue <= 90) return "61-90 days";
+  return "90+ days";
+};
+const buildInvoiceAging = (deals, quotes) => {
+  const won = deals.filter((d) => d.stage === "Won" && !d.collectedAt);
+  const buckets = {};
+  AGING_BUCKETS.forEach((b) => { buckets[b] = { count: 0, value: 0 }; });
+  const lines = won.map((d) => {
+    const linkedQ = quotes.find((q) => q.oppId === d.id && q.status === "Accepted");
+    const expected = expectedCollectionDate(d, linkedQ);
+    const daysOverdue = expected ? daysBetween(expected, today()) : 0;
+    const bucket = agingBucketFor(daysOverdue);
+    buckets[bucket].count += 1;
+    buckets[bucket].value += dealValue(d);
+    return { name: d.name, accountId: d.accountId, value: dealValue(d), expected, daysOverdue, bucket, terms: linkedQ?.paymentTerms || "—" };
+  }).sort((a, b) => b.daysOverdue - a.daysOverdue);
+  return { buckets, lines, totalOutstanding: lines.reduce((s, l) => s + l.value, 0) };
+};
+
+/* Detailed per-rep breakdown — named individuals, so this section is
+   classification-gated to Confidential+ in REPORT_SECTIONS. */
+const buildRepDetail = (deals, quotes, users, roleOf, payouts) => {
+  const owners = users.filter((u) => OWNER_ROLES.includes(u.role));
+  return owners.map((o) => {
+    const relevant = deals.filter((d) => d.ownerId === o.id || (d.agreement && d.agreement.assistBDId === o.id));
+    const open = relevant.filter((d) => d.stage !== "Won" && d.stage !== "Lost");
+    const won = relevant.filter((d) => d.stage === "Won");
+    const collected = won.filter((d) => d.collectedAt);
+    const shareOf = (d) => commissionShare(d, o.id, roleOf);
+    const maturedComm = collected.reduce((s, d) => s + shareOf(d), 0);
+    const paid = payouts.filter((p) => p.ownerId === o.id).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    const ownQuotes = quotes.filter((q) => q.ownerId === o.id);
+    return {
+      name: o.name, region: o.region || "All territories",
+      openCount: open.length, openValue: open.reduce((s, d) => s + dealValue(d), 0), weighted: open.reduce((s, d) => s + dealWeighted(d), 0),
+      quotesCount: ownQuotes.length, quotesValue: ownQuotes.reduce((s, q) => s + quoteNet(q), 0),
+      wonCount: won.length, wonValue: won.reduce((s, d) => s + dealValue(d), 0),
+      maturedComm, payableComm: Math.max(0, maturedComm - paid),
+    };
+  });
+};
+
+/* Detailed per-product-line breakdown: pipeline, quoted, won, catalog depth. */
+const buildProductDetail = (deals, quotes, catalog) => {
+  const open = deals.filter((d) => d.stage !== "Won" && d.stage !== "Lost");
+  const won = deals.filter((d) => d.stage === "Won");
+  return Object.keys(PRODUCTS).map((line) => {
+    const openLines = open.flatMap((d) => (d.lines || []).filter((l) => l.product === line));
+    const wonLines = won.flatMap((d) => (d.lines || []).filter((l) => l.product === line));
+    const quoteLines = quotes.flatMap((q) => (q.lines || []).filter((l) => catalog.find((p) => p.id === l.itemId)?.productLine === line).map((l) => ({ ...l, qty: Number(l.qty) || 0, unitPrice: Number(l.unitPrice) || 0 })));
+    return {
+      label: PRODUCTS[line].short,
+      openCount: openLines.length, openValue: openLines.reduce((s, l) => s + (Number(l.value) || 0), 0),
+      quotesCount: quoteLines.length, quotesValue: quoteLines.reduce((s, l) => s + l.qty * l.unitPrice, 0),
+      wonCount: wonLines.length, wonValue: wonLines.reduce((s, l) => s + (Number(l.value) || 0), 0),
+      catalogItems: catalog.filter((p) => p.productLine === line).length,
+    };
+  }).filter((r) => r.openCount || r.quotesCount || r.wonCount || r.catalogItems);
+};
+
+/* Detailed per-airline (account) breakdown — the full book, not just top 8. */
+const buildAccountDetail = (accounts, deals, userById) => {
+  const open = deals.filter((d) => d.stage !== "Won" && d.stage !== "Lost");
+  const won = deals.filter((d) => d.stage === "Won");
+  return accounts.map((a) => {
+    const openA = open.filter((d) => d.accountId === a.id);
+    const wonA = won.filter((d) => d.accountId === a.id);
+    return {
+      name: a.name, region: a.region, tier: a.tier, owner: userById(a.ownerId)?.name || "—",
+      fleetSize: (a.fleet || []).reduce((s, f) => s + (Number(f.count) || 0), 0),
+      invoiced: a.revenue?.total || 0, lastActive: a.revenue?.lastActive || "—",
+      openValue: openA.reduce((s, d) => s + dealValue(d), 0), openCount: openA.length,
+      wonCount: wonA.length, regStatus: a.reg?.status || "Not started",
+    };
+  }).sort((a, b) => b.invoiced - a.invoiced);
+};
+
+/* Detailed per-aircraft-model breakdown — mirrors Aircraft 360's Model 360 view. */
+const buildAircraftDetail = (accounts, deals) => {
+  const open = deals.filter((d) => d.stage !== "Won" && d.stage !== "Lost");
+  return FAMILY_DEFS.map((fam) => {
+    const re = new RegExp(fam.re, "i");
+    const ops = accounts.filter((a) => (a.fleet || []).some((f) => re.test(f.type)));
+    const tails = ops.reduce((s, a) => s + (a.fleet || []).filter((f) => re.test(f.type)).reduce((s2, f) => s2 + (Number(f.count) || 0), 0), 0);
+    const opIds = new Set(ops.map((a) => a.id));
+    const openOnOps = open.filter((d) => opIds.has(d.accountId));
+    const engaged = new Set([...deals.filter((d) => opIds.has(d.accountId)).map((d) => d.accountId)]);
+    return {
+      label: fam.label, oem: fam.oem, tails, operators: ops.length,
+      openPipeline: openOnOps.reduce((s, d) => s + dealValue(d), 0), engagedCount: engaged.size,
+    };
+  }).filter((r) => r.tails > 0);
+};
+
+/* Raw account x month invoice matrix — the actual figures from the
+   invoice export, not an aggregate. Every account with invoice history,
+   every month in range, no top-N cutoff. */
+const buildRawMatrix = (accounts, dateFrom, dateTo) => {
+  const months = [...new Set(accounts.flatMap((a) => Object.keys(a.revenue?.monthly || {})))]
+    .filter((m) => monthInRange(m, dateFrom, dateTo)).sort((a, b) => monthKey(a) - monthKey(b));
+  const rows = accounts.filter((a) => a.revenue?.total > 0).map((a) => ({
+    name: a.name,
+    values: months.map((m) => a.revenue.monthly?.[m] || 0),
+    total: months.reduce((s, m) => s + (a.revenue.monthly?.[m] || 0), 0),
+  })).sort((a, b) => b.total - a.total);
+  return { months, rows, grandTotal: rows.reduce((s, r) => s + r.total, 0) };
+};
+
 const expectedCollectionDate = (d, linkedQuote) => {
   if (!d.closedAt) return null;
   const days = linkedQuote ? (TERMS_DAYS[linkedQuote.paymentTerms] ?? 30) : 30;
@@ -344,10 +593,10 @@ const SEED_CATALOG = [
 /* Official Area Director Africa Region account list (Feb 07 2026 export),
    deduplicated, plus Zelealem's active pipeline targets (ET, ET MRO, Jambojet, ASKY). */
 const SEED_ACCOUNTS = [
-  { id: "a1", name: "Ethiopian Airlines", tier: "Tier 1", region: "East Africa", country: "Ethiopia", ownerId: "r0", notes: "Pipeline target — flag carrier, largest fleet in Africa. Entry via MRO relationship.", reg: { status: "Docs submitted", submitted: "2026-07-01", expected: "2027-03-31", expiry: "", notes: "6–12 month cycle. Vendor pre-qualification pack sent." } },
+  { id: "a1", name: "Ethiopian Airlines", tier: "Tier 1", region: "East Africa", country: "Ethiopia", ownerId: "r0", notes: "ACTIVE CUSTOMER — $289,613 invoiced across 16 of the last 19 months (per Jul 2026 invoice export). Not a cold pipeline target — this is an expansion/retention account. Flag carrier, largest fleet in Africa.", reg: { status: "Docs submitted", submitted: "2026-07-01", expected: "2027-03-31", expiry: "", notes: "6–12 month cycle. Vendor pre-qualification pack sent." } },
   { id: "a2", name: "Ethiopian MRO", tier: "Tier 1", region: "East Africa", country: "Ethiopia", ownerId: "r0", notes: "Pipeline target — third-party MRO arm. Vogt PMA and Repair Mgmt fit. Contact: Daniel Demeke." },
   { id: "a3", name: "Kenya Airways", tier: "Tier 1", region: "East Africa", country: "Kenya", ownerId: "b8", notes: "Home-base account." },
-  { id: "a4", name: "Jambojet", tier: "Tier 1", region: "East Africa", country: "Kenya", ownerId: "r0", notes: "Pipeline target — LCC, Q400 fleet, 10M passengers. Contact: Kidus Melkamu (CTO)." },
+  { id: "a4", name: "Jambojet", tier: "Tier 1", region: "East Africa", country: "Kenya", ownerId: "r0", notes: "ACTIVE CUSTOMER — $166,182 invoiced across 11 of the last 19 months (per Jul 2026 invoice export). Not a cold pipeline target — this is an expansion/retention account. LCC, Q400 fleet, 10M passengers. Contact: Kidus Melkamu (CTO)." },
   { id: "a5", name: "EgyptAir", tier: "Tier 1", region: "North Africa", country: "Egypt", ownerId: "b1", notes: "Large fleet + MRO.", reg: { status: "Under evaluation", submitted: "2026-06-01", expected: "2026-11-30", expiry: "", notes: "4–6 month cycle." } },
   { id: "a6", name: "Royal Air Maroc", tier: "Tier 1", region: "North Africa", country: "Morocco", ownerId: "b6", notes: "Expanding fleet under national aviation strategy.", reg: { status: "Docs submitted", submitted: "2026-07-01", expected: "2026-10-31", expiry: "", notes: "Fastest cycle (3–5 mo). Register Vogt PMA and Oshino separately — separate procurement committees." } },
   { id: "a7", name: "Air Peace Limited", tier: "Tier 1", region: "West Africa", country: "Nigeria", ownerId: "r0", notes: "Listed N/A on the region sheet — Zelealem interim coverage." },
@@ -357,15 +606,15 @@ const SEED_ACCOUNTS = [
   { id: "a11", name: "Uganda Airlines", tier: "Tier 2", region: "East Africa", country: "Uganda", ownerId: "b8", notes: "Young fleet (A330neo, CRJ900)." },
   { id: "a12", name: "Air Tanzania Company Limited", tier: "Tier 2", region: "East Africa", country: "Tanzania", ownerId: "b8", notes: "Government-backed; 787/A220 fleet." },
   { id: "a13", name: "Airlink", tier: "Tier 2", region: "Southern Africa", country: "South Africa", ownerId: "b5", notes: "Largest Southern Africa regional network." },
-  { id: "a21", name: "Air Cairo", tier: "Tier 2", region: "North Africa", country: "Egypt", ownerId: "b1", notes: "" },
+  { id: "a21", name: "Air Cairo", tier: "Tier 1", region: "North Africa", country: "Egypt", ownerId: "b1", notes: "Upgraded Tier 2→1: $164,834 invoiced over 13 active months (Jul 2026 export)." },
   { id: "a22", name: "Nile Air", tier: "Tier 2", region: "North Africa", country: "Egypt", ownerId: "b1", notes: "" },
-  { id: "a23", name: "Nesma Airlines", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "b1", notes: "" },
+  { id: "a23", name: "Nesma Airlines", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "b1", notes: "Owner confirmed as Ahmed Elshahawy per Jul 2026 invoice export." },
   { id: "a24", name: "JAC", tier: "Tier 3", region: "Middle East", country: "", ownerId: "b2", notes: "Confirm entity details with Ahmed Youssry." },
   { id: "a25", name: "Flynas", tier: "Tier 1", region: "Middle East", country: "Saudi Arabia", ownerId: "b3", notes: "" },
   { id: "a26", name: "Gulf Air", tier: "Tier 1", region: "Middle East", country: "Bahrain", ownerId: "b3", notes: "" },
-  { id: "a27", name: "Almasria", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "b3", notes: "" },
+  { id: "a27", name: "Almasria", tier: "Tier 1", region: "North Africa", country: "Egypt", ownerId: "b3", notes: "Upgraded Tier 3→1: $526,058 invoiced over 15 active months — largest account in Hazem's book by revenue (Jul 2026 export)." },
   { id: "a28", name: "Red Sea Airlines", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "b3", notes: "" },
-  { id: "a29", name: "Petroleum Air Services", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "b3", notes: "" },
+  { id: "a29", name: "Petroleum Air Services", tier: "Tier 1", region: "North Africa", country: "Egypt", ownerId: "b3", notes: "Upgraded Tier 3→1: $328,957 invoiced over 16 active months (Jul 2026 export)." },
   { id: "a30", name: "JORAMCO (Jordan A/C Maint.)", tier: "Tier 2", region: "Middle East", country: "Jordan", ownerId: "b3", notes: "MRO account — Repair Mgmt / Vogt PMA fit." },
   { id: "a31", name: "Gulf Helicopters Company", tier: "Tier 3", region: "Middle East", country: "Qatar", ownerId: "b3", notes: "" },
   { id: "a32", name: "Air Master", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "b3", notes: "" },
@@ -383,37 +632,42 @@ const SEED_ACCOUNTS = [
   { id: "a44", name: "Century Avionics (Pty) Ltd", tier: "Tier 3", region: "Southern Africa", country: "South Africa", ownerId: "b5", notes: "" },
   { id: "a45", name: "Air Mauritius", tier: "Tier 2", region: "Southern Africa", country: "Mauritius", ownerId: "b5", notes: "Indian Ocean." },
   { id: "a46", name: "Africa Charter Airline", tier: "Tier 3", region: "Southern Africa", country: "South Africa", ownerId: "b5", notes: "" },
-  { id: "a47", name: "Aerotechnic Industries", tier: "Tier 2", region: "North Africa", country: "Morocco", ownerId: "b6", notes: "RAM/AFI KLM JV — MRO." },
+  { id: "a47", name: "Aerotechnic Industries", tier: "Tier 1", region: "North Africa", country: "Morocco", ownerId: "b6", notes: "Upgraded Tier 2→1: $216,086 invoiced over 18 of the last 19 months — near-continuous billing (Jul 2026 export). RAM/AFI KLM JV — MRO." },
   { id: "a48", name: "Air Algérie", tier: "Tier 1", region: "North Africa", country: "Algeria", ownerId: "b7", notes: "" },
-  { id: "a49", name: "Tassili Airlines", tier: "Tier 2", region: "North Africa", country: "Algeria", ownerId: "b7", notes: "" },
-  { id: "a50", name: "Tassili Travail Aérien", tier: "Tier 3", region: "North Africa", country: "Algeria", ownerId: "b7", notes: "" },
+  { id: "a49", name: "Tassili Airlines", tier: "Tier 1", region: "North Africa", country: "Algeria", ownerId: "b7", notes: "Upgraded Tier 2→1: $250,837 invoiced over 12 active months (Jul 2026 export)." },
+  { id: "a50", name: "Tassili Travail Aérien", tier: "Tier 1", region: "North Africa", country: "Algeria", ownerId: "b7", notes: "Upgraded Tier 3→1: $448,059 invoiced over 16 active months — larger than sister account Tassili Airlines (Jul 2026 export)." },
   { id: "a51", name: "Safarilink Aviation Limited", tier: "Tier 3", region: "East Africa", country: "Kenya", ownerId: "b8", notes: "" },
   { id: "a52", name: "Tunisair Technics", tier: "Tier 2", region: "North Africa", country: "Tunisia", ownerId: "r0", notes: "Listed on banner.aero customer map — Tunisia not on region sheet; confirm rep assignment with Darya." },
-  { id: "a53", name: "Nouvelair", tier: "Tier 2", region: "North Africa", country: "Tunisia", ownerId: "r0", notes: "Listed on banner.aero customer map (A320 operator) — confirm rep assignment." },
+  { id: "a53", name: "Nouvelair", tier: "Tier 1", region: "North Africa", country: "Tunisia", ownerId: "r0", notes: "Upgraded Tier 2→1: $324,326 invoiced over 14 active months — currently UNASSIGNED to a territory rep despite being a top-5 account by revenue. Assign urgently." },
+  { id: "a54", name: "Express Air Cargo", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "r0", notes: "New — surfaced by Jul 2026 invoice export. No BD manager listed on the source sheet; territory unassigned." },
+  { id: "a55", name: "Sabena Technics MIR", tier: "Tier 3", region: "North Africa", country: "Morocco", ownerId: "r0", notes: "New — surfaced by Jul 2026 invoice export ($1,485 invoiced, 2 active months). No BD manager listed; territory unassigned." },
+  { id: "a56", name: "Fly Egypt", tier: "Tier 3", region: "North Africa", country: "Egypt", ownerId: "b3", notes: "New — surfaced by Jul 2026 invoice export. BD manager listed as Hazem Abdelhamid; $0 invoiced to date." },
+  { id: "a57", name: "Blue Bird Aviation Ltd", tier: "Tier 3", region: "East Africa", country: "Kenya", ownerId: "r0", notes: "New — surfaced by Jul 2026 invoice export. No BD manager listed; territory unassigned. Kenyan charter/cargo operator." },
 ];
 
 /* BD team from the official region sheet */
+const emailOf = (name) => name.trim().toLowerCase().replace(/[^a-z ]/g, "").split(/\s+/).join(".") + "@banner.aero";
 const SEED_USERS = [
-  { id: "r0", name: "Zelealem M.J.", role: "Area Director", region: "" },
-  { id: "b1", name: "Ahmed Elshahawy", role: "Territory Manager (BD)", region: "North Africa" },
-  { id: "b2", name: "Ahmed Youssry", role: "Territory Manager (BD)", region: "Middle East" },
-  { id: "b3", name: "Hazem Abdelhamid", role: "Territory Manager (BD)", region: "North Africa / Gulf" },
-  { id: "b4", name: "Isaac Omotayo", role: "Territory Manager (BD)", region: "West Africa" },
-  { id: "b5", name: "Jacques Brittz", role: "Territory Manager (BD)", region: "Southern Africa" },
-  { id: "b6", name: "Mahdi Sadiq", role: "Territory Manager (BD)", region: "North Africa" },
-  { id: "b7", name: "Mohamed Hemissi", role: "Territory Manager (BD)", region: "North Africa" },
-  { id: "b8", name: "Wambui Mureithi", role: "Territory Manager (BD)", region: "East Africa" },
-  { id: "u2", name: "COO", role: "COO", region: "" },
-  { id: "u3", name: "CEO", role: "CEO", region: "" },
-  { id: "u4", name: "President", role: "President", region: "" },
-  { id: "u5", name: "Analyst", role: "Analyst", region: "" },
-  { id: "u6", name: "Operations", role: "Operations", region: "" },
-  { id: "u7", name: "Finance", role: "Finance", region: "" },
+  { id: "r0", name: "Zelealem M.J.", role: "Area Director", region: "", email: "zelealem.mj@banner.aero", reportsTo: "" },
+  { id: "b1", name: "Ahmed Elshahawy", role: "Territory Manager (BD)", region: "North Africa", email: emailOf("Ahmed Elshahawy"), reportsTo: "r0" },
+  { id: "b2", name: "Ahmed Youssry", role: "Territory Manager (BD)", region: "Middle East", email: emailOf("Ahmed Youssry"), reportsTo: "r0" },
+  { id: "b3", name: "Hazem Abdelhamid", role: "Territory Manager (BD)", region: "North Africa / Gulf", email: emailOf("Hazem Abdelhamid"), reportsTo: "r0" },
+  { id: "b4", name: "Isaac Omotayo", role: "Territory Manager (BD)", region: "West Africa", email: emailOf("Isaac Omotayo"), reportsTo: "r0" },
+  { id: "b5", name: "Jacques Brittz", role: "Territory Manager (BD)", region: "Southern Africa", email: emailOf("Jacques Brittz"), reportsTo: "r0" },
+  { id: "b6", name: "Mahdi Sadiq", role: "Territory Manager (BD)", region: "North Africa", email: emailOf("Mahdi Sadiq"), reportsTo: "r0" },
+  { id: "b7", name: "Mohamed Hemissi", role: "Territory Manager (BD)", region: "North Africa", email: emailOf("Mohamed Hemissi"), reportsTo: "r0" },
+  { id: "b8", name: "Wambui Mureithi", role: "Territory Manager (BD)", region: "East Africa", email: emailOf("Wambui Mureithi"), reportsTo: "r0" },
+  { id: "u2", name: "COO", role: "COO", region: "", email: "coo@banner.aero", reportsTo: "r0" },
+  { id: "u3", name: "CEO", role: "CEO", region: "", email: "ceo@banner.aero", reportsTo: "u2" },
+  { id: "u4", name: "President", role: "President", region: "", email: "president@banner.aero", reportsTo: "u3" },
+  { id: "u5", name: "Analyst", role: "Analyst", region: "", email: "analyst@banner.aero", reportsTo: "r0" },
+  { id: "u6", name: "Operations", role: "Operations", region: "", email: "operations@banner.aero", reportsTo: "r0" },
+  { id: "u7", name: "Finance", role: "Finance", region: "", email: "finance@banner.aero", reportsTo: "r0" },
 ];
 
 const SEED = {
   users: SEED_USERS,
-  settings: { monthlyQuota: 300000, currentUserId: "", thresholds: DEFAULT_THRESHOLDS, termsMatrix: DEFAULT_TERMS_MATRIX },
+  settings: { monthlyQuota: 300000, currentUserId: "", thresholds: DEFAULT_THRESHOLDS, termsMatrix: DEFAULT_TERMS_MATRIX, stageProb: { ...STAGE_PROB }, annualTarget: 3500000, repQuotas: {} },
   catalog: SEED_CATALOG,
   quotes: [
     {
@@ -435,11 +689,11 @@ const SEED = {
     { id: "c4", name: "Ahadu Simachew", title: "CEO", accountId: "a10", email: "", phone: "", notes: "ASKY executive sponsor." },
   ],
   deals: [
-    { id: "d1", name: "Q400 fleet ULB + lamp programme", accountId: "a4", ownerId: "r0", lines: [{ product: "Novega ULBs", value: 11400 }, { product: "Oshino Lamps", value: 34000 }], stage: "Quote / RFQ", prob: 60, forecastCat: "Upside", closeDate: "2026-09-30", notes: "GREEN90 retrofit + lamp consumables. Quote Q-2026-001 issued.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null },
-    { id: "d2", name: "PMA parts evaluation", accountId: "a2", ownerId: "r0", lines: [{ product: "Vogt PMA Parts", value: 250000 }, { product: "Repair Management", value: 40000 }], stage: "Meeting Held", prob: 40, forecastCat: "Pipeline", closeDate: "2026-11-30", notes: "Lav system PMAs (VA-2540 family) + repair pilot. AFRAA follow-up.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null },
-    { id: "d3", name: "Component repair pilot", accountId: "a3", ownerId: "b8", lines: [{ product: "Repair Management", value: 120000 }], stage: "Prospect", prob: 10, forecastCat: "Pipeline", closeDate: "2026-10-31", notes: "Position ahead of Aviation Africa Summit (Sep, Nairobi).", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null },
-    { id: "d4", name: "Anjou cabin belt refresh", accountId: "a8", ownerId: "b5", lines: [{ product: "Anjou Seat Belts", value: 60000 }], stage: "Prospect", prob: 10, forecastCat: "Pipeline", closeDate: "2026-12-15", notes: "349/353 belts — SB route, ~2-4 wk lead. Tie to cabin refurb cycle.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null },
-    { id: "d5", name: "Oshino lamp starter order", accountId: "a7", ownerId: "r0", lines: [{ product: "Oshino Lamps", value: 35000 }], stage: "Contacted", prob: 20, forecastCat: "Pipeline", closeDate: "2026-10-15", notes: "Air Peace — interim coverage account.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null },
+    { id: "d1", name: "Q400 fleet ULB + lamp programme", accountId: "a4", ownerId: "r0", lines: [{ product: "Novega ULBs", value: 11400 }, { product: "Oshino Lamps", value: 34000 }], stage: "Quote / RFQ", prob: 60, forecastCat: "Upside", closeDate: "2026-09-30", notes: "GREEN90 retrofit + lamp consumables. Quote Q-2026-001 issued.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null, stageHistory: [] },
+    { id: "d2", name: "PMA parts evaluation", accountId: "a2", ownerId: "r0", lines: [{ product: "Vogt PMA Parts", value: 250000 }, { product: "Repair Management", value: 40000 }], stage: "Meeting Held", prob: 40, forecastCat: "Pipeline", closeDate: "2026-11-30", notes: "Lav system PMAs (VA-2540 family) + repair pilot. AFRAA follow-up.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null, stageHistory: [] },
+    { id: "d3", name: "Component repair pilot", accountId: "a3", ownerId: "b8", lines: [{ product: "Repair Management", value: 120000 }], stage: "Prospect", prob: 10, forecastCat: "Pipeline", closeDate: "2026-10-31", notes: "Position ahead of Aviation Africa Summit (Sep, Nairobi).", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null, stageHistory: [] },
+    { id: "d4", name: "Anjou cabin belt refresh", accountId: "a8", ownerId: "b5", lines: [{ product: "Anjou Seat Belts", value: 60000 }], stage: "Prospect", prob: 10, forecastCat: "Pipeline", closeDate: "2026-12-15", notes: "349/353 belts — SB route, ~2-4 wk lead. Tie to cabin refurb cycle.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null, stageHistory: [] },
+    { id: "d5", name: "Oshino lamp starter order", accountId: "a7", ownerId: "r0", lines: [{ product: "Oshino Lamps", value: 35000 }], stage: "Contacted", prob: 20, forecastCat: "Pipeline", closeDate: "2026-10-15", notes: "Air Peace — interim coverage account.", createdAt: "2026-07-01", lastTouch: today(), closedAt: "", meetingNotes: [], agreement: null, stageHistory: [] },
   ],
   activities: [
     { id: "t1", text: "Confirm meetings for Aviation Africa Summit (Nairobi, Sep 2026)", accountId: "", due: "2026-08-01", done: false },
@@ -457,14 +711,143 @@ const SEED = {
 /* Accounts named on banner.aero's public customer map (Africa section) */
 const WEB_CUSTOMERS = ["a1", "a3", "a4", "a5", "a6", "a7", "a13", "a21", "a27", "a28", "a29", "a36", "a37", "a39", "a47", "a49", "a50", "a52", "a53"];
 /* fold indicative fleets + website-customer flags into seed accounts */
-SEED.accounts = SEED.accounts.map((a) => ({ fleet: FLEET_SEED[a.id] || [], webCustomer: WEB_CUSTOMERS.includes(a.id), ...a }));
+SEED.accounts = SEED.accounts.map((a) => ({ fleet: FLEET_SEED[a.id] || [], webCustomer: WEB_CUSTOMERS.includes(a.id), revenue: REVENUE_SEED[a.id] || null, ...a, ownerId: a.ownerId || "r0" }));
 SEED.catalog = SEED.catalog.map((p) => (V12_CAT_ATA[p.id] ? { ...p, ...V12_CAT_ATA[p.id] } : p));
+SEED.deals = SEED.deals.map((d) => ({ ...d, stageHistory: (d.stageHistory && d.stageHistory.length) ? d.stageHistory : [{ stage: d.stage, date: d.createdAt || today() }] }));
 
 /* --------------------------- migrations ---------------------------- */
 
 const FCAT_MAP = { "Best Case": "Upside", "Committed": "Forecast" };
 
 /* v10 -> v11: collection tracking — commission matures upon collection */
+/* v31 -> v32: no persisted-shape change - purely a sign-in screen
+   redesign. */
+function migrateV31(v31) {
+  return { ...v31, settings: { ...v31.settings, currentUserId: "" } };
+}
+
+/* v30 -> v31: no persisted-shape change - dual coverage is computed at
+   render time from data that already exists. */
+function migrateV30(v30) {
+  return { ...v30, settings: { ...v30.settings, currentUserId: "" } };
+}
+
+/* v29 -> v30: no persisted-shape change - the trailing-2-quarter basis and
+   the Area Director's flat (no-growth) treatment are computed at render
+   time from data that already exists. */
+function migrateV29(v29) {
+  return { ...v29, settings: { ...v29.settings, currentUserId: "" } };
+}
+
+/* v28 -> v29: settings gain an editable annual company target (default
+   $3.5M) and a per-rep annual quota override map. Defaults for any rep
+   without an explicit override are computed live (25% over their historic
+   invoiced achievement), so nothing needs to be set until someone edits it. */
+function migrateV28(v28) {
+  return {
+    ...v28,
+    settings: { annualTarget: 3500000, repQuotas: {}, ...v28.settings, currentUserId: "" },
+  };
+}
+
+/* v27 -> v28: no persisted-shape change — per-rep actual-invoiced
+   reconciliation is computed at render time from account ownership. */
+function migrateV27(v27) {
+  return { ...v27, settings: { ...v27.settings, currentUserId: "" } };
+}
+
+/* v26 -> v27: settings gain an editable stageProb map (defaults to the
+   existing hardcoded STAGE_PROB constant, so nothing changes until the
+   Area Director actually edits a value). */
+function migrateV26(v26) {
+  return {
+    ...v26,
+    settings: { stageProb: { ...STAGE_PROB }, ...v26.settings, currentUserId: "" },
+  };
+}
+
+/* v25 -> v26: no persisted-shape change — historical quarters are derived
+   at render time from existing account revenue and deal close dates. */
+function migrateV25(v25) {
+  return { ...v25, settings: { ...v25.settings, currentUserId: "" } };
+}
+
+/* v24 -> v25: no persisted-shape change — PDF pagination is assembled at
+   export time only. */
+function migrateV24(v24) {
+  return { ...v24, settings: { ...v24.settings, currentUserId: "" } };
+}
+
+/* v23 -> v24: no persisted-shape change — the monthly-within-quarter
+   breakdown is computed at render time from each deal's closeDate. */
+function migrateV23(v23) {
+  return { ...v23, settings: { ...v23.settings, currentUserId: "" } };
+}
+
+/* v22 -> v23: no persisted-shape change — the raw matrix and PDF
+   pagination are computed/assembled at render/export time. */
+function migrateV22(v22) {
+  return { ...v22, settings: { ...v22.settings, currentUserId: "" } };
+}
+
+/* v21 -> v22: no persisted-shape change — detailed report breakdowns are
+   computed at render/export time from data already in the document. */
+function migrateV21(v21) {
+  return { ...v21, settings: { ...v21.settings, currentUserId: "" } };
+}
+
+/* v20 -> v21: stage-history log on deals (one baseline entry for existing
+   deals, since transitions before this feature existed aren't known). */
+function migrateV20(v20) {
+  return {
+    ...v20,
+    deals: (v20.deals || []).map((d) => ({
+      stageHistory: (d.stageHistory && d.stageHistory.length) ? d.stageHistory : [{ stage: d.stage, date: d.lastTouch || d.createdAt || today() }],
+      ...d,
+    })),
+    settings: { ...v20.settings, currentUserId: "" },
+  };
+}
+
+/* v19 -> v20: no persisted-shape change — report date-range filtering and
+   A4 layout are generated at render/export time, not stored. */
+function migrateV19(v19) {
+  return { ...v19, settings: { ...v19.settings, currentUserId: "" } };
+}
+
+/* v18 -> v19: no persisted-shape change — FUNNEL_SEED/classification
+   constants are static reference data, not part of the stored document. */
+function migrateV18(v18) {
+  return { ...v18, settings: { ...v18.settings, currentUserId: "" } };
+}
+
+/* v17 -> v18: no persisted-shape change — v18 was a CSS/responsive-only
+   release. (Declared here, correctly wired into the chain — a prior patch
+   introduced KEY_V18 without actually chaining it, which this fixes.) */
+function migrateV17(v17) {
+  return { ...v17, settings: { ...v17.settings, currentUserId: "" } };
+}
+
+/* v16 -> v17: unassigned accounts default to the Area Director; users gain
+   email + reportsTo for a real create-user/reporting-line flow */
+function migrateV16(v16) {
+  return {
+    ...v16,
+    accounts: (v16.accounts || []).map((a) => ({ ...a, ownerId: a.ownerId || "r0" })),
+    users: (v16.users || []).map((u) => ({ email: u.email || "", reportsTo: u.reportsTo !== undefined ? u.reportsTo : (u.role === "Area Director" ? "" : "r0"), ...u })),
+    settings: { ...v16.settings, currentUserId: "" },
+  };
+}
+
+/* v15 -> v16: real invoiced-revenue history reconciled from Jul 2026 export */
+function migrateV15(v15) {
+  return {
+    ...v15,
+    accounts: (v15.accounts || []).map((a) => (REVENUE_SEED[a.id] ? { ...a, revenue: REVENUE_SEED[a.id] } : { revenue: a.revenue || null, ...a })),
+    settings: { ...v15.settings, currentUserId: "" },
+  };
+}
+
 /* v14 -> v15: governance fields — meetingNotes/agreement on deals, payouts, roles, lead->account linking */
 function migrateV14(v14) {
   const rolesNeeded = ["Operations", "Finance"];
@@ -700,8 +1083,8 @@ const Field = ({ label, children, flex }) => (
   </label>
 );
 
-const Btn = ({ onClick, kind = "primary", children, small }) => {
-  const base = { border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 600, fontFamily: "inherit", fontSize: small ? 12 : 13, padding: small ? "5px 10px" : "9px 14px", display: "inline-flex", alignItems: "center", gap: 6 };
+const Btn = ({ onClick, kind = "primary", children, small, disabled }) => {
+  const base = { border: "none", borderRadius: 4, cursor: disabled ? "not-allowed" : "pointer", fontWeight: 600, fontFamily: "inherit", fontSize: small ? 12 : 13, padding: small ? "5px 10px" : "9px 14px", display: "inline-flex", alignItems: "center", gap: 6, opacity: disabled ? 0.5 : 1 };
   const kinds = {
     primary: { background: C.blue, color: "#fff" },
     green: { background: C.green, color: "#fff" },
@@ -709,7 +1092,7 @@ const Btn = ({ onClick, kind = "primary", children, small }) => {
     ghost: { background: "transparent", color: C.blue, border: `1px solid ${C.line}` },
     danger: { background: "transparent", color: C.red, border: `1px solid ${C.line}` },
   };
-  return <button onClick={onClick} style={{ ...base, ...kinds[kind] }}>{children}</button>;
+  return <button onClick={disabled ? undefined : onClick} disabled={disabled} style={{ ...base, ...kinds[kind] }}>{children}</button>;
 };
 
 const IconBtn = ({ onClick, color = C.sub, title, children }) => (
@@ -741,7 +1124,7 @@ const SectionTitle = ({ children, right }) => (
 
 /* ------------------------------- App ------------------------------ */
 
-export default function BAICrmV15() {
+export default function BAICrmV32() {
   const [data, setData] = useState(null);
   const [tab, setTab] = useState("dashboard");
   const [modal, setModal] = useState(null);
@@ -750,19 +1133,19 @@ export default function BAICrmV15() {
 
   useEffect(() => {
     (async () => {
-      for (const [key, mig] of [[KEY_V15, (x) => x], [KEY_V14, migrateV14], [KEY_V13, (x) => migrateV14(migrateV13(x))], [KEY_V12, (x) => migrateV14(migrateV13(migrateV12(x)))], [KEY_V11, (x) => migrateV14(migrateV13(migrateV12(migrateV11(x))))], [KEY_V10, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(x)))))], [KEY_V9, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(x))))))], [KEY_V8, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(x)))))))], [KEY_V7, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(x))))))))], [KEY_V6, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(x)))))))))], [KEY_V5, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(x))))))))))], [KEY_V4, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(x)))))))))))], [KEY_V3, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(migrateV3(x))))))))))))], [KEY_V2, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(migrateV2(x))))))))))))], [KEY_V1, (x) => migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(migrateV2(migrateV1(x)))))))))))))]]) {
+      for (const [key, mig] of [[KEY_V32, (x) => x], [KEY_V31, migrateV31], [KEY_V30, (x) => migrateV31(migrateV30(x))], [KEY_V29, (x) => migrateV31(migrateV30(migrateV29(x)))], [KEY_V28, (x) => migrateV31(migrateV30(migrateV29(migrateV28(x))))], [KEY_V27, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(x)))))], [KEY_V26, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(x))))))], [KEY_V25, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(x)))))))], [KEY_V24, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(x))))))))], [KEY_V23, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(x)))))))))], [KEY_V22, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(x))))))))))], [KEY_V21, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(x)))))))))))], [KEY_V20, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(x))))))))))))], [KEY_V19, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(x)))))))))))))], [KEY_V18, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(x))))))))))))))], [KEY_V17, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(x)))))))))))))))], [KEY_V16, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(x))))))))))))))))], [KEY_V15, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(x)))))))))))))))))], [KEY_V14, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(x))))))))))))))))))], [KEY_V13, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(x)))))))))))))))))))], [KEY_V12, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(x))))))))))))))))))))], [KEY_V11, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(x)))))))))))))))))))))], [KEY_V10, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(x))))))))))))))))))))))], [KEY_V9, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(x)))))))))))))))))))))))], [KEY_V8, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(x))))))))))))))))))))))))], [KEY_V7, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(x)))))))))))))))))))))))))], [KEY_V6, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(x))))))))))))))))))))))))))], [KEY_V5, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(x)))))))))))))))))))))))))))], [KEY_V4, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(x))))))))))))))))))))))))))))], [KEY_V3, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(migrateV3(x)))))))))))))))))))))))))))))], [KEY_V2, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(migrateV2(x)))))))))))))))))))))))))))))], [KEY_V1, (x) => migrateV31(migrateV30(migrateV29(migrateV28(migrateV27(migrateV26(migrateV25(migrateV24(migrateV23(migrateV22(migrateV21(migrateV20(migrateV19(migrateV18(migrateV17(migrateV16(migrateV15(migrateV14(migrateV13(migrateV12(migrateV11(migrateV10(migrateV9(migrateV8(migrateV7(migrateV6(migrateV5(migrateV4(migrateV2(migrateV1(x))))))))))))))))))))))))))))))]]) {
         try {
           const res = await window.storage.get(key);
           if (res && res.value) {
             const d = mig(JSON.parse(res.value));
             setData(d);
-            if (key !== KEY_V15) { try { await window.storage.set(KEY_V15, JSON.stringify(d)); } catch (e) {} }
+            if (key !== KEY_V32) { try { await window.storage.set(KEY_V32, JSON.stringify(d)); } catch (e) {} }
             return;
           }
         } catch (e) { /* try next */ }
       }
       setData(SEED);
-      try { await window.storage.set(KEY_V15, JSON.stringify(SEED)); } catch (e) { console.error(e); }
+      try { await window.storage.set(KEY_V32, JSON.stringify(SEED)); } catch (e) { console.error(e); }
     })();
   }, []);
 
@@ -770,7 +1153,7 @@ export default function BAICrmV15() {
     setData(next);
     setSaveState("Saving…");
     try {
-      await window.storage.set(KEY_V15, JSON.stringify(next));
+      await window.storage.set(KEY_V32, JSON.stringify(next));
       setSaveState("Saved");
       setTimeout(() => setSaveState(""), 1500);
     } catch (e) { setSaveState("Save failed — data kept in session"); }
@@ -783,30 +1166,64 @@ export default function BAICrmV15() {
   const termsMatrix = settings.termsMatrix || DEFAULT_TERMS_MATRIX;
   const me = users.find((u) => u.id === settings.currentUserId);
 
-  /* ---------- sign-in ---------- */
+  /* ---------- sign-in landing page ---------- */
   if (!me) {
+    const initials = (name) => name.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+    const features = [
+      [Building2, "46-account book across Africa & the Middle East, real fleet and revenue data"],
+      [TrendingUp, "Live pipeline, quoting (CPQ), and territory-scoped forecasting"],
+      [ShieldCheck, "Role-based access — every rep sees only their own accounts and commissions"],
+    ];
     return (
-      <div style={{ fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif", background: C.blueDeep, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-        <div style={{ width: "100%", maxWidth: 440 }}>
-          <div style={{ textAlign: "center", color: "#fff", marginBottom: 24 }}>
-            <Plane size={30} style={{ transform: "rotate(-45deg)" }} />
-            <div style={{ fontSize: 20, fontWeight: 700, marginTop: 8 }}>BAI Africa CRM</div>
-            <div style={{ fontSize: 12, opacity: 0.7, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 4 }}>Select your profile · Banner Aircraft International — founded 1994 · 150+ clients · 100+ airlines · 30+ countries</div>
-          </div>
-          <div style={{ background: "#fff", borderRadius: 8, padding: 12 }}>
-            {users.map((u) => (
-              <button key={u.id} onClick={() => persist({ ...data, settings: { ...settings, currentUserId: u.id } })}
-                style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 10, background: "none", border: "none", borderBottom: `1px solid ${C.bg}`, padding: "12px 10px", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: C.ink }}>{u.name}</div>
-                  <div style={{ fontSize: 11, color: C.faint, marginTop: 2 }}>{ROLES[u.role]?.blurb}{u.region ? ` · ${u.region}` : ""}</div>
-                </div>
-                <Tag color={roleColorMap[u.role] || C.faint}>{u.role}</Tag>
-              </button>
+      <div style={{ fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif", minHeight: "100vh", display: "flex", flexWrap: "wrap" }}>
+        {/* Hero panel */}
+        <div className="bai-login-hero" style={{ flex: "1 1 420px", background: `linear-gradient(160deg, ${C.blueDeep}, #0A2A44 70%)`, color: "#fff", padding: "56px 44px", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: 320 }}>
+          <div style={{ maxWidth: 440 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
+              <Plane size={26} style={{ transform: "rotate(-45deg)", color: C.teal }} />
+              <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.teal }}>Banner Aircraft International</span>
+            </div>
+            <div style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.15, marginBottom: 10 }}>Africa Business<br />Development, unified.</div>
+            <div style={{ fontSize: 14, opacity: 0.8, lineHeight: 1.6, marginBottom: 28 }}>
+              One workspace for accounts, quotes, pipeline, and commissions across the whole territory.
+            </div>
+            {features.map(([Icon, text], i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 6, padding: 8, flexShrink: 0 }}><Icon size={16} color={C.teal} /></div>
+                <div style={{ fontSize: 13, opacity: 0.85, lineHeight: 1.5, paddingTop: 6 }}>{text}</div>
+              </div>
             ))}
+            <div style={{ display: "flex", gap: 20, marginTop: 28, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.15)", flexWrap: "wrap" }}>
+              {[["1994", "Founded"], ["150+", "Clients"], ["100+", "Airlines"], ["30+", "Countries"]].map(([n, l]) => (
+                <div key={l}><div style={{ fontSize: 18, fontWeight: 800 }}>{n}</div><div style={{ fontSize: 10.5, opacity: 0.65, textTransform: "uppercase", letterSpacing: "0.05em" }}>{l}</div></div>
+              ))}
+            </div>
           </div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center", marginTop: 14, lineHeight: 1.5 }}>
-            Profiles simulate role-based access in this single-user app.<br />Real authentication requires a backend (e.g. Supabase Auth).
+        </div>
+
+        {/* Sign-in panel */}
+        <div style={{ flex: "1 1 380px", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+          <div style={{ width: "100%", maxWidth: 420 }}>
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: C.ink }}>Sign in</div>
+              <div style={{ fontSize: 12.5, color: C.sub, marginTop: 4 }}>Select your profile to continue</div>
+            </div>
+            <div style={{ background: "#fff", borderRadius: 10, border: `1px solid ${C.line}`, boxShadow: "0 2px 10px rgba(12,42,68,0.06)", overflow: "hidden", maxHeight: "58vh", overflowY: "auto" }}>
+              {users.map((u) => (
+                <button key={u.id} onClick={() => persist({ ...data, settings: { ...settings, currentUserId: u.id } })}
+                  style={{ display: "flex", width: "100%", alignItems: "center", gap: 12, background: "none", border: "none", borderBottom: `1px solid ${C.bg}`, padding: "13px 14px", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: roleColorMap[u.role] || C.faint, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, fontWeight: 800, flexShrink: 0 }}>{initials(u.name)}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: C.ink }}>{u.name}</div>
+                    <div style={{ fontSize: 11, color: C.faint, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ROLES[u.role]?.blurb}{u.region ? ` · ${u.region}` : ""}</div>
+                  </div>
+                  <Tag color={roleColorMap[u.role] || C.faint}>{u.role}</Tag>
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: C.faint, textAlign: "center", marginTop: 16, lineHeight: 1.5 }}>
+              Profiles simulate role-based access in this demo.<br />Production deployment signs in with real banner.aero Google accounts.
+            </div>
           </div>
         </div>
       </div>
@@ -870,8 +1287,12 @@ export default function BAICrmV15() {
 
   const upsert = (key, item) => {
     if (key === "deals") {
-      item = { ...item, lastTouch: today() };
       const prev = data.deals.find((x) => x.id === item.id);
+      const stageChanged = !prev || prev.stage !== item.stage;
+      item = {
+        ...item, lastTouch: today(),
+        stageHistory: stageChanged ? [...(item.stageHistory || prev?.stageHistory || []), { stage: item.stage, date: today() }] : (item.stageHistory || prev?.stageHistory || []),
+      };
       const list = data.deals;
       const exists = list.some((x) => x.id === item.id);
       persist({ ...data, deals: exists ? list.map((x) => (x.id === item.id ? item : x)) : [...list, item] });
@@ -896,10 +1317,11 @@ export default function BAICrmV15() {
       ...data,
       deals: deals.map((d) => d.id === dealId ? {
         ...d, stage,
-        prob: STAGE_PROB[stage] ?? d.prob,
+        prob: settings.stageProb?.[stage] ?? STAGE_PROB[stage] ?? d.prob,
         forecastCat: STAGE_FCAT[stage] || d.forecastCat,
         closedAt: (stage === "Won" || stage === "Lost") ? (d.closedAt || today()) : "",
         lastTouch: today(),
+        stageHistory: (prev && prev.stage === stage) ? (d.stageHistory || []) : [...(d.stageHistory || []), { stage, date: today() }],
       } : d),
     });
     if (stage === "Lost") setModal({ type: "lostReason", dealId });
@@ -984,7 +1406,7 @@ export default function BAICrmV15() {
         deals: next.deals.map((d) => {
           if (d.id !== q.oppId) return d;
           if (status === "Sent" && STAGES.indexOf(d.stage) < STAGES.indexOf("Quote / RFQ")) {
-            return { ...d, stage: "Quote / RFQ", prob: STAGE_PROB["Quote / RFQ"], forecastCat: STAGE_FCAT["Quote / RFQ"] };
+            return { ...d, stage: "Quote / RFQ", prob: settings.stageProb?.["Quote / RFQ"] ?? STAGE_PROB["Quote / RFQ"], forecastCat: STAGE_FCAT["Quote / RFQ"] };
           }
           if (status === "Accepted") {
             const byLine = {};
@@ -1030,21 +1452,34 @@ export default function BAICrmV15() {
   return (
     <div style={{ fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif", background: C.bg, minHeight: "100vh", color: C.ink }}>
       <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; width: 100%; max-width: 100vw; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        #root { width: 100%; max-width: 100vw; overflow-x: hidden; }
+        img, svg { max-width: 100%; }
+        input, select, textarea, button { max-width: 100%; font-family: inherit; }
         select:focus, input:focus, textarea:focus, button:focus-visible { outline: 2px solid ${C.blue}; outline-offset: 1px; }
         table { border-collapse: collapse; width: 100%; }
-        th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: ${C.sub}; padding: 8px 10px; border-bottom: 1px solid ${C.line}; }
+        th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: ${C.sub}; padding: 8px 10px; border-bottom: 1px solid ${C.line}; white-space: nowrap; }
         td { padding: 10px; border-bottom: 1px solid ${C.line}; font-size: 14px; vertical-align: top; }
         select:disabled { opacity: 0.7; cursor: not-allowed; }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+        /* Prevent iOS Safari's auto-zoom when focusing a form field smaller than 16px */
+        @media (max-width: 640px) {
+          input, select, textarea { font-size: 16px !important; }
+          .bai-header-title { font-size: 14px !important; }
+          .bai-header-sub { display: none; }
+          .bai-main { padding: 14px 10px 50px !important; }
+          th, td { padding: 7px 8px !important; }
+        }
       `}</style>
 
       <header style={{ background: C.blueDeep, color: "#fff", padding: "14px 20px" }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Plane size={22} style={{ transform: "rotate(-45deg)" }} />
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.02em" }}>BAI Africa CRM</div>
-              <div style={{ fontSize: 11, opacity: 0.75, letterSpacing: "0.08em", textTransform: "uppercase" }}>Banner Aircraft International · Africa Area</div>
+              <div className="bai-header-title" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.02em" }}>BAI Africa CRM</div>
+              <div className="bai-header-sub" style={{ fontSize: 11, opacity: 0.75, letterSpacing: "0.08em", textTransform: "uppercase" }}>Banner Aircraft International · Africa Area</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, flexWrap: "wrap" }}>
@@ -1103,7 +1538,7 @@ export default function BAICrmV15() {
         </div>
       </nav>
 
-      <main style={{ maxWidth: 1180, margin: "0 auto", padding: "20px 16px 60px" }}>
+      <main className="bai-main" style={{ maxWidth: 1180, margin: "0 auto", padding: "20px 16px 60px", width: "100%" }}>
         {tab === "dashboard" && <Dashboard deals={vDeals} leads={vLeads} activities={vActivities} quotes={vQuotes} accounts={vAccounts} acct={acct} userById={userById} setTab={setTab} />}
         {tab === "leads" && <Leads leads={vLeads} acct={acct} canEdit={canEdit} setStatus={setLeadStatus} setRank={setLeadRank} convert={convertLead} onAdd={() => setModal({ type: "lead" })} onEdit={(l) => setModal({ type: "lead", item: l })} onDelete={(id) => remove("leads", id)} />}
         {tab === "pipeline" && <Pipeline deals={vDeals} quotes={quotes} acct={acct} userById={userById} canEdit={canEdit} isAdmin={isAdmin} canProcessPayouts={canProcessPayouts} toggleCollected={toggleCollected} onAgreement={(d) => setModal({ type: "agreement", dealId: d.id })} setStage={setStage} onAdd={() => setModal({ type: "deal" })} onEdit={(d) => setModal({ type: "deal", item: d })} onDelete={(id) => remove("deals", id)} onQuote={(d) => setModal({ type: "quote", preset: { accountId: d.accountId, oppId: d.id } })} />}
@@ -1112,13 +1547,13 @@ export default function BAICrmV15() {
         {tab === "accounts" && <Accounts accounts={vAccounts} deals={deals} interactions={interactions} userById={userById} canEdit={canEdit} isAdmin={isAdmin} onAdd={() => setModal({ type: "account" })} onEdit={(a) => setModal({ type: "account", item: a })} onDelete={(id) => remove("accounts", id)} onLog={(a) => setModal({ type: "interaction", account: a })} onReg={(a) => setModal({ type: "reg", account: a })} />}
         {tab === "contacts" && <Contacts contacts={vContacts} acct={acct} canEdit={canEdit} onAdd={() => setModal({ type: "contact" })} onEdit={(c) => setModal({ type: "contact", item: c })} onDelete={(id) => remove("contacts", id)} />}
         {tab === "actions" && <Actions activities={vActivities} acct={acct} canEdit={canEdit} toggle={toggleTask} onAdd={() => setModal({ type: "activity" })} onDelete={(id) => remove("activities", id)} />}
-        {tab === "forecast" && <Forecast deals={vDeals} settings={settings} isAdmin={isAdmin} userById={userById} users={users} isBD={isBD} me={me} onQuota={(q) => isAdmin && persist({ ...data, settings: { ...settings, monthlyQuota: q } })} />}
-        {tab === "insights" && <Insights deals={vDeals} accounts={vAccounts} quotes={vQuotes} acct={acct} userById={userById} />}
+        {tab === "forecast" && <Forecast deals={vDeals} accounts={vAccounts} settings={settings} isAdmin={isAdmin} userById={userById} users={users} isBD={isBD} me={me} onQuota={(q) => isAdmin && persist({ ...data, settings: { ...settings, monthlyQuota: q } })} onStageProb={(sp) => isAdmin && persist({ ...data, settings: { ...settings, stageProb: sp } })} onQuotaPlan={(annualTarget, repQuotas) => isAdmin && persist({ ...data, settings: { ...settings, annualTarget, repQuotas } })} />}
+        {tab === "insights" && <Insights deals={vDeals} accounts={vAccounts} quotes={vQuotes} catalog={catalog} acct={acct} userById={userById} users={users} me={me} isBD={isBD} isAdmin={isAdmin} roleOf={roleOf} payouts={payouts} />}
         {tab === "commissions" && <Commissions deals={deals} users={users} me={me} isBD={isBD} isAdmin={isAdmin} canProcessPayouts={canProcessPayouts} payouts={payouts} roleOf={roleOf} onRecordPayout={(owner, defaultAmount) => setModal({ type: "payout", owner, defaultAmount })} />}
         {tab === "a360" && <Aircraft360 accounts={vAccounts} allAccounts={accounts} aircraft={vAircraft} aogCases={vAog} catalog={catalog} deals={vDeals} acct={acct} userById={userById} canEdit={canEdit} onAddAircraft={(preset) => setModal({ type: "aircraft", preset })} onEditAircraft={(x) => setModal({ type: "aircraft", item: x })} onDeleteAircraft={(id) => remove("aircraft", id)} onAddAog={() => setModal({ type: "aog" })} onEditAog={(x) => setModal({ type: "aog", item: x })} onDeleteAog={(id) => remove("aogCases", id)} setAogStatus={(id, status) => canEdit && persist({ ...data, aogCases: aogCases.map((c) => (c.id === id ? { ...c, status, closedAt: status === "Closed" ? today() : "" } : c)) })} />}
       </main>
 
-      {canEdit && modal?.type === "deal" && <DealForm item={modal.item} accounts={isBD ? accounts.filter((a) => a.ownerId === me.id) : accounts} owners={owners} me={me} lockOwner={isBD} roleOf={roleOf} onSave={(d) => upsert("deals", d)} onClose={() => setModal(null)} />}
+      {canEdit && modal?.type === "deal" && <DealForm item={modal.item} accounts={isBD ? accounts.filter((a) => a.ownerId === me.id) : accounts} owners={owners} me={me} lockOwner={isBD} roleOf={roleOf} stageProb={settings.stageProb} onSave={(d) => upsert("deals", d)} onClose={() => setModal(null)} />}
       {canEdit && modal?.type === "quote" && <QuoteForm item={modal.item} preset={modal.preset} accounts={isBD ? accounts.filter((a) => a.ownerId === me.id) : accounts} deals={deals} contacts={contacts} quotes={quotes} catalog={catalog} me={me} thresholds={thresholds} termsMatrix={termsMatrix} quoteCount={quotes.length} onSave={(q) => upsert("quotes", q)} onClose={() => setModal(null)} />}
       {canEditCatalog && modal?.type === "product" && <ProductForm item={modal.item} onSave={(p) => upsert("catalog", p)} onClose={() => setModal(null)} />}
       {(isAdmin || (canEdit && modal?.item)) && modal?.type === "account" && <AccountForm item={modal.item} owners={owners} me={me} lockOwner={isBD} onSave={(a) => upsert("accounts", a)} onClose={() => setModal(null)} />}
@@ -1508,98 +1943,140 @@ const quoteTerms = (term, incoterm) => [
 ];
 
 function buildQuotePdf({ q, a, owner, itemById, sub, net, term, validUntil }) {
+  const PW = 612, PH = 792, MARGIN = 36, RIGHT = PW - MARGIN; // US Letter — unchanged from the original quote format
+  const FOOTER_Y = 52, CONTENT_FLOOR = 66;
   const NAVY = "0.047 0.208 0.341", TEAL = "0.243 0.788 0.690", INK = "0.082 0.141 0.184", GRAY = "0.353 0.420 0.471", RED = "0.651 0.227 0.227", LINE = "0.855 0.886 0.914";
-  const ops = [];
-  const R = (x, y, w, h, c) => ops.push(`${c} rg ${x} ${y} ${w} ${h} re f`);
-  const L = (x1, y1, x2, y2, c, wd = 0.8) => ops.push(`${c} RG ${wd} w ${x1} ${y1} m ${x2} ${y2} l S`);
-  const T = (x, y, s, size, bold, c) => ops.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${c} rg 1 0 0 1 ${x} ${y} Tm (${pdfEsc(s)}) Tj ET`);
-  const TR = (right, y, s, size, bold, c) => T(right - pdfAscii(s).length * size * 0.5, y, s, size, bold, c);
   const incoterm = q.incoterm || "EXW Hollywood, FL";
 
-  // letterhead
-  R(0, 726, 612, 66, NAVY);
-  T(36, 764, "BANNER AIRCRAFT INTERNATIONAL", 14, true, "1 1 1");
-  T(36, 749, "A I R W O R T H I N E S S   S U P P O R T   E X P E R T S", 6.5, false, TEAL);
-  T(36, 737, "2252 Hayes St, Hollywood, FL 33020, USA | sales@banner.aero | +1 (855) 822-6637", 6.5, false, "0.75 0.83 0.89");
-  TR(576, 762, "QUOTATION", 15, true, "1 1 1");
-  TR(576, 747, q.number, 10, true, TEAL);
-  TR(576, 735, `Date: ${q.createdAt}  Valid until: ${validUntil}`, 7, false, "0.75 0.83 0.89");
+  const pages = [];
+  let curOps = [];
+  let y = PH;
 
-  // reference block
-  let y = 704;
-  const meta = [
-    ["TO", `${a?.name || "-"}${a?.country ? ", " + a.country : ""}`],
-    ["ATTENTION", q.attention || "-"],
-    ["YOUR REF / RFQ", q.customerRef || "-"],
-    ["DELIVERY", `${incoterm} (Incoterms 2020)`],
-    ["PAYMENT TERMS", term],
-    ["PREPARED BY", `${owner?.name || "-"}, Africa Area`],
-  ];
-  meta.forEach(([k, v]) => { T(36, y, k, 6.5, true, GRAY); T(130, y, v, 9, k === "TO", INK); y -= 13; });
+  const R = (x, yy, w, h, c) => curOps.push(`${c} rg ${x} ${yy} ${w} ${h} re f`);
+  const L = (x1, y1, x2, y2, c, wd = 0.8) => curOps.push(`${c} RG ${wd} w ${x1} ${y1} m ${x2} ${y2} l S`);
+  const T = (x, yy, s, size, bold, c) => curOps.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${c} rg 1 0 0 1 ${x} ${yy} Tm (${pdfEsc(s)}) Tj ET`);
+  const TR = (right, yy, s, size, bold, c) => T(right - pdfAscii(s).length * size * 0.5, yy, s, size, bold, c);
 
-  // certification banner
-  y -= 4;
-  R(36, y - 5, 540, 15, "0.905 0.953 0.929");
-  T(42, y - 1, "All material supplied with FAA 8130-3 / EASA Form 1 dual release or Certificate of Conformance as applicable, with full traceability.", 7, true, "0.145 0.431 0.306");
-  y -= 24;
+  const drawLineTableHeader = () => {
+    T(MARGIN, y, "PART NUMBER", 6.5, true, GRAY); T(128, y, "DESCRIPTION", 6.5, true, GRAY);
+    TR(352, y, "CD", 6.5, true, GRAY); TR(384, y, "QTY", 6.5, true, GRAY); TR(416, y, "UOM", 6.5, true, GRAY);
+    TR(470, y, "LEAD TIME", 6.5, true, GRAY); TR(522, y, "UNIT USD", 6.5, true, GRAY); TR(RIGHT, y, "EXT USD", 6.5, true, GRAY);
+    L(MARGIN, y - 4, RIGHT, y - 4, NAVY, 1.3); y -= 16;
+  };
 
-  // table header
-  T(36, y, "PART NUMBER", 6.5, true, GRAY); T(128, y, "DESCRIPTION", 6.5, true, GRAY);
-  TR(352, y, "CD", 6.5, true, GRAY); TR(384, y, "QTY", 6.5, true, GRAY); TR(416, y, "UOM", 6.5, true, GRAY);
-  TR(470, y, "LEAD TIME", 6.5, true, GRAY); TR(522, y, "UNIT USD", 6.5, true, GRAY); TR(576, y, "EXT USD", 6.5, true, GRAY);
-  L(36, y - 4, 576, y - 4, NAVY, 1.3); y -= 16;
+  const drawFullLetterhead = () => {
+    y = PH;
+    R(0, y - 66, PW, 66, NAVY);
+    T(MARGIN, y - 28, "BANNER AIRCRAFT INTERNATIONAL", 14, true, "1 1 1");
+    T(MARGIN, y - 43, "A I R W O R T H I N E S S   S U P P O R T   E X P E R T S", 6.5, false, TEAL);
+    T(MARGIN, y - 55, "2252 Hayes St, Hollywood, FL 33020, USA | sales@banner.aero | +1 (855) 822-6637", 6.5, false, "0.75 0.83 0.89");
+    TR(RIGHT, y - 30, "QUOTATION", 15, true, "1 1 1");
+    TR(RIGHT, y - 45, q.number, 10, true, TEAL);
+    TR(RIGHT, y - 57, `Date: ${q.createdAt}  Valid until: ${validUntil}`, 7, false, "0.75 0.83 0.89");
+    y -= 88;
+
+    const meta = [
+      ["TO", `${a?.name || "-"}${a?.country ? ", " + a.country : ""}`],
+      ["ATTENTION", q.attention || "-"],
+      ["YOUR REF / RFQ", q.customerRef || "-"],
+      ["DELIVERY", `${incoterm} (Incoterms 2020)`],
+      ["PAYMENT TERMS", term],
+      ["PREPARED BY", `${owner?.name || "-"}, Africa Area`],
+    ];
+    meta.forEach(([k, v]) => { T(MARGIN, y, k, 6.5, true, GRAY); T(130, y, v, 9, k === "TO", INK); y -= 13; });
+
+    y -= 4;
+    R(MARGIN, y - 5, 540, 15, "0.905 0.953 0.929");
+    T(42, y - 1, "All material supplied with FAA 8130-3 / EASA Form 1 dual release or Certificate of Conformance as applicable, with full traceability.", 7, true, "0.145 0.431 0.306");
+    y -= 24;
+    drawLineTableHeader();
+  };
+
+  const drawContinuationHeader = () => {
+    y = PH;
+    R(0, y - 30, PW, 30, NAVY); y -= 14;
+    T(MARGIN, y, `${q.number} - ${a?.name || ""} (continued)`, 9.5, true, "1 1 1");
+    y -= 22;
+    drawLineTableHeader();
+  };
+
+  const finalizePage = () => { pages.push(curOps); };
+  const newPage = () => { finalizePage(); curOps = []; drawContinuationHeader(); };
+  const ensureSpace = (needed) => { if (y - needed < CONTENT_FLOOR) newPage(); };
+
+  drawFullLetterhead();
 
   (q.lines || []).forEach((l) => {
-    if (y < 330) return; // reserve the lower page for totals + bottom-anchored T&Cs
     const it = itemById(l.itemId);
     const descLines = pdfWrap(it?.name || "Item", 40);
-    T(36, y, it?.pn || "-", 7.5, true, INK);
+    const rowHeight = Math.max(descLines.length * 9.5, 10) + 8;
+    ensureSpace(rowHeight);
+    T(MARGIN, y, it?.pn || "-", 7.5, true, INK);
     descLines.forEach((dl, di) => T(128, y - di * 9.5, dl, 8, false, INK));
     TR(352, y, l.cond || "NE", 8, false, INK);
     TR(384, y, String(l.qty), 8, false, INK);
     TR(416, y, it?.unit || "EA", 8, false, INK);
     TR(470, y, l.leadTime || it?.lead || "-", 7.5, false, INK);
     TR(522, y, fmt2(l.unitPrice).replace("$", ""), 8, false, INK);
-    TR(576, y, fmt(l.qty * l.unitPrice).replace("$", ""), 8, true, INK);
-    y -= Math.max(descLines.length * 9.5, 10) + 8;
-    L(36, y + 5, 576, y + 5, LINE, 0.5);
+    TR(RIGHT, y, fmt(l.qty * l.unitPrice).replace("$", ""), 8, true, INK);
+    y -= rowHeight;
+    L(MARGIN, y + 5, RIGHT, y + 5, LINE, 0.5);
   });
 
-  // totals
-  y -= 6;
-  TR(500, y, "Subtotal", 8.5, false, GRAY); TR(576, y, fmt(sub).replace("$", ""), 8.5, false, INK); y -= 12;
-  TR(500, y, `Discount (${q.discountPct}%)`, 8.5, false, GRAY); TR(576, y, "-" + fmt(sub - net).replace("$", ""), 8.5, false, RED); y -= 5;
-  L(450, y, 576, y, NAVY, 1.1); y -= 12;
-  TR(500, y, "TOTAL (USD)", 10.5, true, INK); TR(576, y, fmt(net).replace("$", ""), 10.5, true, INK); y -= 12;
-  T(36, y, pdfAscii(COND_LEGEND), 6, false, GRAY); y -= 16;
-
-  // T&Cs — anchored to the bottom of the page, just above the footer
+  // Totals + T&Cs travel together as one block, kept on the same page as a unit —
+  // if there isn't room left, they start a fresh page rather than splitting awkwardly.
   const approvedBy = (q.approvals || []).filter((x) => x.decision === "Approved" && x.role !== "Auto");
   const tcWrapped = [];
   quoteTerms(term, incoterm).forEach((clause) => { pdfWrap(clause, 134).forEach((ln) => tcWrapped.push(ln)); });
   const authLine = approvedBy.length ? "Authorised: " + approvedBy.map((x) => `${x.byName} (${x.role}, ${x.date})`).join(" | ") : null;
-  const tcHeight = 14 + tcWrapped.length * 7.4 + (authLine ? 10 : 0);
-  const tcTop = 60 + tcHeight; // footer rule sits at y=52
-  L(36, tcTop + 8, 576, tcTop + 8, LINE, 0.6);
-  T(36, tcTop, "TERMS AND CONDITIONS OF SALE", 6.8, true, NAVY);
+  const totalsBlockHeight = 6 + 12 + 5 + 12 + 12 + 16; // subtotal, discount, rule, total, legend, spacing
+  const tcBlockHeight = 14 + tcWrapped.length * 7.4 + (authLine ? 10 : 0);
+  ensureSpace(totalsBlockHeight + tcBlockHeight);
+
+  y -= 6;
+  TR(500, y, "Subtotal", 8.5, false, GRAY); TR(RIGHT, y, fmt(sub).replace("$", ""), 8.5, false, INK); y -= 12;
+  TR(500, y, `Discount (${q.discountPct}%)`, 8.5, false, GRAY); TR(RIGHT, y, "-" + fmt(sub - net).replace("$", ""), 8.5, false, RED); y -= 5;
+  L(450, y, RIGHT, y, NAVY, 1.1); y -= 12;
+  TR(500, y, "TOTAL (USD)", 10.5, true, INK); TR(RIGHT, y, fmt(net).replace("$", ""), 10.5, true, INK); y -= 12;
+  T(MARGIN, y, pdfAscii(COND_LEGEND), 6, false, GRAY); y -= 16;
+
+  // T&Cs — bottom-anchored on whichever page they land on, same as before
+  const tcTop = Math.max(y, FOOTER_Y + 8 + tcBlockHeight);
+  L(MARGIN, tcTop + 8, RIGHT, tcTop + 8, LINE, 0.6);
+  T(MARGIN, tcTop, "TERMS AND CONDITIONS OF SALE", 6.8, true, NAVY);
   let yy = tcTop - 11;
-  tcWrapped.forEach((ln) => { T(36, yy, ln, 6, false, GRAY); yy -= 7.4; });
-  if (authLine) { yy -= 2; T(36, yy, authLine, 6, true, GRAY); }
+  tcWrapped.forEach((ln) => { T(MARGIN, yy, ln, 6, false, GRAY); yy -= 7.4; });
+  if (authLine) { yy -= 2; T(MARGIN, yy, authLine, 6, true, GRAY); }
 
-  // footer
-  L(36, 52, 576, 52, LINE);
-  T(36, 40, "Banner Aircraft International | www.banner.aero | ASA member | ISO 9001", 6.5, false, GRAY);
-  TR(576, 40, `${q.number} | Page 1 of 1`, 6.5, false, GRAY);
+  finalizePage();
 
-  const stream = ops.join("\n");
-  const objs = [
-    "<</Type/Catalog/Pages 2 0 R>>",
-    "<</Type/Pages/Kids[3 0 R]/Count 1>>",
-    "<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 5 0 R/F2 6 0 R>>>>/Contents 4 0 R>>",
-    `<</Length ${stream.length}>>\nstream\n${stream}\nendstream`,
-    "<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>",
-    "<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold>>",
-  ];
+  // ---- two-pass footer: only now do we know the total page count, so every
+  // page gets an accurate "Page X of Y" rather than a hardcoded "Page 1 of 1". ----
+  const numPages = pages.length;
+  pages.forEach((ops, i) => {
+    ops.push(`${LINE} RG 0.8 w ${MARGIN} ${FOOTER_Y} m ${RIGHT} ${FOOTER_Y} l S`);
+    ops.push(`BT /F1 6.5 Tf ${GRAY} rg 1 0 0 1 ${MARGIN} 40 Tm (${pdfEsc("Banner Aircraft International | www.banner.aero | ASA member | ISO 9001")}) Tj ET`);
+    const label = `${q.number} | Page ${i + 1} of ${numPages}`;
+    const rx = RIGHT - pdfAscii(label).length * 6.5 * 0.5;
+    ops.push(`BT /F1 6.5 Tf ${GRAY} rg 1 0 0 1 ${rx} 40 Tm (${pdfEsc(label)}) Tj ET`);
+  });
+
+  // ---- assemble the N-page PDF ----
+  const fontsObjIndex = 2 + numPages * 2 + 1;
+  const kids = Array.from({ length: numPages }, (_, i) => `${3 + i * 2} 0 R`).join(" ");
+  const objs = [];
+  objs.push("<</Type/Catalog/Pages 2 0 R>>");
+  objs.push(`<</Type/Pages/Kids[${kids}]/Count ${numPages}>>`);
+  pages.forEach((ops, i) => {
+    const pageObjNum = 3 + i * 2;
+    const streamObjNum = pageObjNum + 1;
+    objs[pageObjNum - 1] = `<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${PW} ${PH}]/Resources<</Font<</F1 ${fontsObjIndex} 0 R/F2 ${fontsObjIndex + 1} 0 R>>>>/Contents ${streamObjNum} 0 R>>`;
+    const stream = ops.join("\n");
+    objs[streamObjNum - 1] = `<</Length ${stream.length}>>\nstream\n${stream}\nendstream`;
+  });
+  objs[fontsObjIndex - 1] = "<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>";
+  objs[fontsObjIndex] = "<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold>>";
+
   let pdf = "%PDF-1.4\n";
   const offsets = [];
   objs.forEach((o, i) => { offsets.push(pdf.length); pdf += `${i + 1} 0 obj\n${o}\nendobj\n`; });
@@ -1609,6 +2086,330 @@ function buildQuotePdf({ q, a, owner, itemById, sub, net, term, validUntil }) {
   pdf += `trailer\n<</Size ${objs.length + 1}/Root 1 0 R>>\nstartxref\n${xrefPos}\n%%EOF`;
   return pdf;
 }
+
+
+function buildReportPdf({ title, classification, sections, distribution, preparedBy, data, genDate, period, dateFrom, dateTo, commissionRows, stageTracking, invoiceAging, repDetail, productDetail, accountDetail, aircraftDetail, rawMatrix }) {
+  // A4 page in points: 595.28 x 841.89 (vs US Letter 612 x 792 used by the quote PDF).
+  const PW = 595.28, PH = 841.89, MARGIN = 34, RIGHT = PW - MARGIN;
+  const FOOTER_Y = 40, CONTENT_FLOOR = 56; // below this, a section must break to a new page rather than be clipped
+  const NAVY = "0.047 0.208 0.341", TEAL = "0.243 0.788 0.690", INK = "0.082 0.141 0.184", GRAY = "0.353 0.420 0.471", LINE = "0.855 0.886 0.914";
+  const CLASS_RGB = { Public: "0.145 0.431 0.306", Internal: "0.078 0.325 0.549", Confidential: "0.722 0.447 0.055", Restricted: "0.651 0.227 0.227" };
+  const classRgb = CLASS_RGB[classification] || GRAY;
+
+  // ---- multi-page assembly: every section renders through ensureSpace(), so a
+  // long table starts a new page instead of being silently cut off. ----
+  const pages = [];
+  let curOps = [];
+  let pageNum = 1;
+  let y = PH;
+
+  const R = (x, yy, w, h, c) => curOps.push(`${c} rg ${x} ${yy} ${w} ${h} re f`);
+  const L = (x1, y1, x2, y2, c, wd = 0.8) => curOps.push(`${c} RG ${wd} w ${x1} ${y1} m ${x2} ${y2} l S`);
+  const T = (x, yy, s, size, bold, c) => curOps.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${c} rg 1 0 0 1 ${x} ${yy} Tm (${pdfEsc(s)}) Tj ET`);
+  const TR = (right, yy, s, size, bold, c) => T(right - pdfAscii(s).length * size * 0.5, yy, s, size, bold, c);
+
+  const drawFooter = () => {
+    L(MARGIN, FOOTER_Y, RIGHT, FOOTER_Y, LINE);
+    R(0, 0, PW, 24, classRgb);
+    T(MARGIN, 7, `${classification.toUpperCase()} - Banner Aircraft International - Africa Area`, 7.5, true, "1 1 1");
+    TR(RIGHT, 7, `Page ${pageNum} - Generated ${genDate} - A4`, 7.5, false, "1 1 1");
+  };
+
+  const finalizePage = () => { drawFooter(); pages.push(curOps); };
+
+  const drawFullLetterhead = () => {
+    y = PH;
+    R(0, y - 60, PW, 60, NAVY); y -= 22;
+    T(MARGIN, y, "BANNER AIRCRAFT INTERNATIONAL", 13, true, "1 1 1"); y -= 12;
+    T(MARGIN, y, "AFRICA BUSINESS DEVELOPMENT", 6.5, false, TEAL); y -= 18;
+    T(MARGIN, y, pdfAscii(title), 15, true, "1 1 1");
+    y = PH - 60 - 4;
+    R(0, y - 13, PW, 13, classRgb);
+    T(PW / 2 - pdfAscii(classification).length * 3.2, y - 9, `${classification.toUpperCase()} - NOT FOR DISTRIBUTION OUTSIDE THE LIST BELOW`, 7.5, true, "1 1 1");
+    y -= 24;
+    const meta = [["PREPARED BY", preparedBy.name], ["GENERATED", genDate], ["PERIOD", period], ["DISTRIBUTION", distribution.map((u) => u.name).join(", ") || "-"]];
+    meta.forEach(([k, v]) => { T(MARGIN, y, k, 6.5, false, GRAY); T(140, y, pdfAscii(v), 9, true, INK); y -= 12.5; });
+    L(MARGIN, y - 2, RIGHT, y - 2, LINE); y -= 16;
+  };
+
+  const drawContinuationHeader = () => {
+    y = PH;
+    R(0, y - 30, PW, 30, NAVY); y -= 14;
+    T(MARGIN, y, pdfAscii(title) + " (continued)", 10, true, "1 1 1");
+    TR(RIGHT, y, classification.toUpperCase(), 8.5, true, "1 1 1");
+    y -= 22;
+  };
+
+  const newPage = () => { finalizePage(); curOps = []; pageNum += 1; drawContinuationHeader(); };
+  const ensureSpace = (needed) => { if (y - needed < CONTENT_FLOOR) newPage(); };
+
+  drawFullLetterhead();
+
+  // ---- section-drawing primitives ----
+  const secTitle = (s) => { ensureSpace(14); T(MARGIN, y, s.toUpperCase(), 9, true, NAVY); y -= 12; };
+  const kvRow = (label, value, size = 8.5) => { ensureSpace(10.5); T(MARGIN, y, label, size, false, GRAY); TR(RIGHT, y, value, size, true, INK); y -= 10.5; };
+  const barRow = (label, value, max, colorRgb) => {
+    ensureSpace(11);
+    T(MARGIN, y, pdfAscii(label).slice(0, 42), 8, false, INK);
+    const barX = 280, barMaxW = RIGHT - barX - 70;
+    R(barX, y - 6.5, max ? (value / max) * barMaxW : 0, 7.5, colorRgb);
+    TR(RIGHT, y, fmt(value).replace("$", ""), 8, false, INK);
+    y -= 11;
+  };
+
+  const rangedMonths = data.allMonths.filter((m) => monthInRange(m, dateFrom, dateTo));
+  const rangedMonthlyTotals = data.monthlyTotals.filter((m) => monthInRange(m.month, dateFrom, dateTo));
+  const rangedRevenueTotal = rangedMonthlyTotals.reduce((s, m) => s + m.value, 0);
+  const rangedFunnel = filterFunnel(dateFrom, dateTo);
+  const monthlyTableMonths = [...new Set([...rangedMonths, ...rangedFunnel.months])].sort((a, b) => monthKey(a) - monthKey(b));
+
+  if (sections.includes("kpis")) {
+    secTitle("Executive KPIs");
+    kvRow("Win rate", data.winRate === null ? "-" : `${data.winRate.toFixed(0)}%`);
+    kvRow("Avg deal size (won)", data.avgSize === null ? "-" : fmt(data.avgSize));
+    kvRow("Avg sales cycle", data.avgCycle === null ? "-" : `${Math.round(data.avgCycle)} days`);
+    kvRow("RFQ to quote turnaround", data.avgRfq === null ? "-" : `${data.avgRfq.toFixed(1)} days`);
+    y -= 5;
+  }
+
+  if (sections.includes("revenue") && rangedMonthlyTotals.length) {
+    ensureSpace(45);
+    secTitle(`Historic invoiced revenue - ${fmt(rangedRevenueTotal)} in range`);
+    const max = Math.max(...rangedMonthlyTotals.map((m) => m.value), 1);
+    let bx = MARGIN;
+    const bw = Math.min(9, (RIGHT - MARGIN) / rangedMonthlyTotals.length - 1.5);
+    rangedMonthlyTotals.forEach((m) => {
+      const h = Math.max((m.value / max) * 32, m.value > 0 ? 1 : 0);
+      R(bx, y - 32, bw, h, TEAL);
+      bx += bw + 1.5;
+    });
+    y -= 40;
+  }
+
+  if (sections.includes("funnel")) {
+    ensureSpace(70);
+    secTitle("BD funnel - RFQ to Quote to Sales Order to Invoice");
+    T(MARGIN, y, "Scope note: invoiced total in this export matches a single account's history - confirm scope before external use.", 6.5, false, "0.722 0.447 0.055");
+    y -= 10;
+    const rfq = rangedFunnel.rfqUniquePN.reduce((a, b) => a + b, 0);
+    const quoted = rangedFunnel.quotedUniquePN.reduce((a, b) => a + b, 0);
+    const so = rangedFunnel.totalSOCount.reduce((a, b) => a + b, 0);
+    const soVal = rangedFunnel.totalSOValue.reduce((a, b) => a + b, 0);
+    const quotedVal = rangedFunnel.totalQuotesValue.reduce((a, b) => a + b, 0);
+    kvRow("RFQ lines (unique PN)", String(rfq));
+    kvRow("Quoted", `${quoted} (${rfq ? ((quoted / rfq) * 100).toFixed(0) : 0}% of RFQ)`);
+    kvRow("Total quoted value", fmt(quotedVal));
+    kvRow("Sales orders raised", String(so));
+    kvRow("Sales order value", `${fmt(soVal)} (${quotedVal ? ((soVal / quotedVal) * 100).toFixed(1) : 0}% of quoted)`);
+    y -= 5;
+  }
+
+  if (sections.includes("monthlyDetail") && monthlyTableMonths.length) {
+    secTitle("Monthly tracking");
+    const cols = [["Month", MARGIN, "left"], ["Invoiced", 160, "right"], ["RFQ", 240, "right"], ["Quoted", 290, "right"], ["Quoted $", 350, "right"], ["SO#", 430, "right"], ["SO $", 470, "right"]];
+    cols.forEach(([label, x]) => T(x, y, label.toUpperCase(), 6.5, true, GRAY));
+    y -= 3; L(MARGIN, y, RIGHT, y, NAVY, 1); y -= 9;
+    monthlyTableMonths.forEach((m) => {
+      ensureSpace(9.5);
+      const rev = rangedMonthlyTotals.find((x) => x.month === m)?.value || 0;
+      const fi = rangedFunnel.months.indexOf(m);
+      const rfq = fi === -1 ? 0 : rangedFunnel.rfqUniquePN[fi];
+      const quoted = fi === -1 ? 0 : rangedFunnel.quotedUniquePN[fi];
+      const quotedVal = fi === -1 ? 0 : rangedFunnel.totalQuotesValue[fi];
+      const so = fi === -1 ? 0 : rangedFunnel.totalSOCount[fi];
+      const soVal = fi === -1 ? 0 : rangedFunnel.totalSOValue[fi];
+      T(MARGIN, y, m, 7.5, true, INK);
+      TR(230, y, rev ? fmt(rev).replace("$", "") : "-", 7.5, false, INK);
+      TR(285, y, rfq ? String(rfq) : "-", 7.5, false, INK);
+      TR(340, y, quoted ? String(quoted) : "-", 7.5, false, INK);
+      TR(420, y, quotedVal ? fmt(quotedVal).replace("$", "") : "-", 7.5, false, INK);
+      TR(465, y, so ? String(so) : "-", 7.5, false, INK);
+      TR(RIGHT, y, soVal ? fmt(soVal).replace("$", "") : "-", 7.5, false, INK);
+      y -= 9.5;
+    });
+    y -= 6;
+  }
+
+  // ---- Raw invoice matrix: chunked into blocks of 6 months so columns stay
+  // readable in portrait; every account and every month appears somewhere,
+  // nothing is cut for space (that's the whole point of this section). ----
+  if (sections.includes("rawMatrix") && rawMatrix && rawMatrix.rows.length) {
+    ensureSpace(20);
+    secTitle(`Raw invoice data - account x month - ${fmt(rawMatrix.grandTotal)} total, ${rawMatrix.rows.length} accounts`);
+    T(MARGIN, y, "Exact figures from the invoice export - every account, every month in range, no summarizing.", 6.5, false, GRAY);
+    y -= 10;
+    const CHUNK = 6;
+    for (let c0 = 0; c0 < rawMatrix.months.length; c0 += CHUNK) {
+      const chunkMonths = rawMatrix.months.slice(c0, c0 + CHUNK);
+      ensureSpace(14);
+      T(MARGIN, y, "ACCOUNT", 6.5, true, GRAY);
+      TR(170, y, "TOTAL", 6.5, true, GRAY);
+      const colW = (RIGHT - 190) / chunkMonths.length;
+      chunkMonths.forEach((m, i) => TR(190 + colW * (i + 1), y, m, 6.5, true, GRAY));
+      y -= 3; L(MARGIN, y, RIGHT, y, NAVY, 1); y -= 8.5;
+      rawMatrix.rows.forEach((r) => {
+        ensureSpace(8.5);
+        T(MARGIN, y, pdfAscii(r.name).slice(0, 26), 7, false, INK);
+        TR(170, y, fmt(r.total).replace("$", ""), 7, true, INK);
+        chunkMonths.forEach((m, i) => {
+          const idx = rawMatrix.months.indexOf(m);
+          const v = r.values[idx] || 0;
+          TR(190 + colW * (i + 1), y, v ? fmt(v).replace("$", "") : "-", 6.8, false, v ? INK : "0.780 0.816 0.847");
+        });
+        y -= 8.5;
+      });
+      y -= 8;
+      if (c0 + CHUNK < rawMatrix.months.length) ensureSpace(14); // next chunk gets its own header block
+    }
+    y -= 4;
+  }
+
+  if (sections.includes("stageTracking") && stageTracking && stageTracking.months.length) {
+    ensureSpace(20);
+    secTitle("Sales stage tracking by month");
+    T(MARGIN, y, "Deals predating this feature carry a single baseline entry, not a full transition history.", 6.5, false, GRAY);
+    y -= 10;
+    stageTracking.months.forEach((m) => {
+      ensureSpace(9);
+      const cells = STAGES.map((st) => {
+        const c = stageTracking.rows[m]?.[st];
+        return c ? `${st.slice(0, 4)}:${c.count}` : "";
+      }).filter(Boolean).join("  ");
+      T(MARGIN, y, m, 7.5, true, INK);
+      T(90, y, cells, 6.8, false, GRAY);
+      y -= 9;
+    });
+    y -= 6;
+  }
+
+  if (sections.includes("invoiceAging") && invoiceAging) {
+    ensureSpace(35);
+    secTitle(`Invoice collection & aging - ${fmt(invoiceAging.totalOutstanding)} outstanding`);
+    let bx = MARGIN;
+    AGING_BUCKETS.forEach((b) => {
+      T(bx, y, fmt(invoiceAging.buckets[b].value).replace("$", ""), 9, true, b === "Current" ? "0.145 0.431 0.306" : b === "90+ days" ? "0.651 0.227 0.227" : "0.722 0.447 0.055");
+      T(bx, y - 9, `${b} (${invoiceAging.buckets[b].count})`, 6.5, false, GRAY);
+      bx += 100;
+    });
+    y -= 24;
+    invoiceAging.lines.forEach((l) => {
+      ensureSpace(9.5);
+      T(MARGIN, y, pdfAscii(l.name).slice(0, 34), 7.5, false, INK);
+      TR(360, y, fmt(l.value).replace("$", ""), 7.5, false, INK);
+      T(370, y, l.terms, 6.8, false, GRAY);
+      TR(RIGHT, y, l.bucket, 7.5, true, l.daysOverdue > 0 ? "0.651 0.227 0.227" : "0.145 0.431 0.306");
+      y -= 9.5;
+    });
+    y -= 6;
+  }
+
+  const detailTable = (label, cols, rows, rowFn) => {
+    if (!rows || rows.length === 0) return;
+    ensureSpace(20);
+    secTitle(label);
+    let cx = MARGIN;
+    const widths = cols.map((c) => c.w);
+    cols.forEach((c, i) => { (c.align === "right" ? TR(cx + widths[i], y, c.h, 6.5, true, GRAY) : T(cx, y, c.h, 6.5, true, GRAY)); cx += widths[i]; });
+    y -= 3; L(MARGIN, y, RIGHT, y, NAVY, 1); y -= 8.5;
+    rows.forEach((row) => {
+      ensureSpace(8.5);
+      let cx2 = MARGIN;
+      const vals = rowFn(row);
+      cols.forEach((c, i) => {
+        if (c.align === "right") TR(cx2 + widths[i], y, vals[i], 7, false, INK);
+        else T(cx2, y, pdfAscii(String(vals[i])).slice(0, Math.floor(widths[i] / 3.6)), 7, i === 0, INK);
+        cx2 += widths[i];
+      });
+      y -= 8.5;
+    });
+    y -= 5;
+  };
+
+  if (sections.includes("repDetail") && repDetail && repDetail.length) {
+    detailTable("Detailed breakdown - per rep",
+      [{ h: "Rep", w: 110 }, { h: "Open #/$", w: 90, align: "right" }, { h: "Weighted", w: 70, align: "right" }, { h: "Quotes #/$", w: 90, align: "right" }, { h: "Won #/$", w: 90, align: "right" }, { h: "Payable", w: 82, align: "right" }],
+      repDetail,
+      (r) => [r.name, `${r.openCount}/${fmt(r.openValue).replace("$", "")}`, fmt(r.weighted).replace("$", ""), `${r.quotesCount}/${fmt(r.quotesValue).replace("$", "")}`, `${r.wonCount}/${fmt(r.wonValue).replace("$", "")}`, fmt(r.payableComm).replace("$", "")]
+    );
+  }
+
+  if (sections.includes("productDetail") && productDetail && productDetail.length) {
+    detailTable("Detailed breakdown - per product line",
+      [{ h: "Product line", w: 140 }, { h: "Items", w: 60, align: "right" }, { h: "Open #/$", w: 120, align: "right" }, { h: "Quoted #/$", w: 120, align: "right" }, { h: "Won #/$", w: 96, align: "right" }],
+      productDetail,
+      (r) => [r.label, String(r.catalogItems), `${r.openCount}/${fmt(r.openValue).replace("$", "")}`, `${r.quotesCount}/${fmt(r.quotesValue).replace("$", "")}`, `${r.wonCount}/${fmt(r.wonValue).replace("$", "")}`]
+    );
+  }
+
+  if (sections.includes("accountDetail") && accountDetail && accountDetail.length) {
+    detailTable(`Detailed breakdown - per airline / account (${accountDetail.length})`,
+      [{ h: "Account", w: 110 }, { h: "Tier", w: 45 }, { h: "Owner", w: 85 }, { h: "Fleet", w: 40, align: "right" }, { h: "Invoiced", w: 70, align: "right" }, { h: "Open $", w: 70, align: "right" }, { h: "Won", w: 40, align: "right" }, { h: "Reg. status", w: 76 }],
+      accountDetail,
+      (r) => [r.name, r.tier.replace("Tier ", "T"), r.owner, r.fleetSize || "-", r.invoiced ? fmt(r.invoiced).replace("$", "") : "-", r.openValue ? fmt(r.openValue).replace("$", "") : "-", r.wonCount || "-", r.regStatus]
+    );
+  }
+
+  if (sections.includes("aircraftDetail") && aircraftDetail && aircraftDetail.length) {
+    detailTable("Detailed breakdown - per aircraft model",
+      [{ h: "Model", w: 130 }, { h: "OEM", w: 110 }, { h: "Tails", w: 60, align: "right" }, { h: "Operators", w: 80, align: "right" }, { h: "Open pipeline", w: 90, align: "right" }, { h: "Engaged", w: 70, align: "right" }],
+      aircraftDetail,
+      (r) => [r.label, r.oem, String(r.tails), String(r.operators), r.openPipeline ? fmt(r.openPipeline).replace("$", "") : "-", `${r.engagedCount}/${r.operators}`]
+    );
+  }
+
+  const barSection = (label, rows) => {
+    if (!rows || rows.length === 0) return;
+    ensureSpace(20);
+    secTitle(label);
+    const max = Math.max(...rows.map((r) => r.value ?? r.revenue?.total ?? 0), 1);
+    rows.forEach((r) => barRow(r.label || r.name, r.value ?? r.revenue?.total ?? 0, max, NAVY));
+    y -= 5;
+  };
+
+  if (sections.includes("topAccounts")) barSection("Top accounts by invoiced revenue", data.topAccountsByRevenue);
+  if (sections.includes("region")) barSection("Open pipeline by region", data.byRegion);
+  if (sections.includes("product")) barSection("Open pipeline by product line", data.byProduct);
+  if (sections.includes("owner")) barSection("Open pipeline by owner", data.byOwner);
+  if (sections.includes("loss")) barSection("Lost deal reasons", data.byLoss);
+  if (sections.includes("commission") && commissionRows && commissionRows.length) {
+    ensureSpace(20);
+    secTitle("Commission summary - matured, by rep");
+    const max = Math.max(...commissionRows.map((r) => r.maturedAll), 1);
+    commissionRows.forEach((r) => barRow(`${r.name} (payable ${fmt(r.payable)})`, r.maturedAll, max, NAVY));
+  }
+
+  finalizePage(); // push whatever's left on the current page
+
+  // ---- assemble a proper N-page PDF: Pages/Kids lists every page, each with
+  // its own content stream, all sharing the same two font resources. ----
+  const numPages = pages.length;
+  const fontsObjIndex = 2 + numPages * 2 + 1; // 1 catalog + 1 pages-node + (page+stream) pairs, then F1
+  const kids = Array.from({ length: numPages }, (_, i) => `${3 + i * 2} 0 R`).join(" ");
+
+  const objs = [];
+  objs.push("<</Type/Catalog/Pages 2 0 R>>"); // 1
+  objs.push(`<</Type/Pages/Kids[${kids}]/Count ${numPages}>>`); // 2
+  pages.forEach((ops, i) => {
+    const pageObjNum = 3 + i * 2;
+    const streamObjNum = pageObjNum + 1;
+    objs[pageObjNum - 1] = `<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${PW} ${PH}]/Resources<</Font<</F1 ${fontsObjIndex} 0 R/F2 ${fontsObjIndex + 1} 0 R>>>>/Contents ${streamObjNum} 0 R>>`;
+    const stream = ops.join("\n");
+    objs[streamObjNum - 1] = `<</Length ${stream.length}>>\nstream\n${stream}\nendstream`;
+  });
+  objs[fontsObjIndex - 1] = "<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>";
+  objs[fontsObjIndex] = "<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold>>";
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [];
+  objs.forEach((o, i) => { offsets.push(pdf.length); pdf += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xrefPos = pdf.length;
+  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+  offsets.forEach((off) => { pdf += String(off).padStart(10, "0") + " 00000 n \n"; });
+  pdf += `trailer\n<</Size ${objs.length + 1}/Root 1 0 R>>\nstartxref\n${xrefPos}\n%%EOF`;
+  return pdf;
+}
+
+
 
 function QuoteDocModal({ q, acct, userById, itemById, onClose }) {
   const a = acct(q.accountId);
@@ -1995,6 +2796,12 @@ function Accounts({ accounts, deals, interactions, userById, canEdit, isAdmin, o
                   {a.webCustomer && (
                     <div style={{ marginTop: 5 }}><Tag color={C.teal}>Banner customer — banner.aero</Tag></div>
                   )}
+                  {a.revenue && a.revenue.total > 0 && (
+                    <div style={{ fontSize: 11, color: C.green, fontWeight: 700, marginTop: 5 }}>
+                      <DollarSign size={11} style={{ verticalAlign: "-2px", marginRight: 2 }} />
+                      Invoiced (19mo): {fmt(a.revenue.total)}{a.revenue.lastActive ? ` — last active ${a.revenue.lastActive}` : ""}
+                    </div>
+                  )}
                   {(a.fleet || []).length > 0 && (
                     <div style={{ fontSize: 11, color: C.sub, marginTop: 5 }}>
                       <Plane size={11} style={{ verticalAlign: "-2px", marginRight: 4, color: C.blue }} />
@@ -2112,22 +2919,96 @@ function Actions({ activities, acct, canEdit, toggle, onAdd, onDelete }) {
 
 /* ------------------------------ Forecast --------------------------- */
 
-function Forecast({ deals, settings, isAdmin, onQuota, userById, users, isBD, me }) {
-  const quarters = [...new Set(deals.map((d) => quarterOf(d.closeDate)))].filter((q) => q !== "No date").sort((a, b) => {
-    const [qa, ya] = a.split(" "), [qb, yb] = b.split(" ");
-    return ya === yb ? qa.localeCompare(qb) : Number(ya) - Number(yb);
-  });
-  const [quarter, setQuarter] = useState(quarters[0] || "");
+function Forecast({ deals, accounts, settings, isAdmin, onQuota, onStageProb, onQuotaPlan, userById, users, isBD, me }) {
+  const stageProb = settings.stageProb || STAGE_PROB;
+  const [showStageProb, setShowStageProb] = useState(false);
+  const [stageProbDraft, setStageProbDraft] = useState(stageProb);
+  /* Quarter list draws from three sources so past quarters show up too:
+     deal target-close dates, deal actual-close dates, and every month with
+     real invoiced history on any account in view. */
+  const quarterSortKey = (q) => { const [ql, y] = q.split(" "); return Number(y) * 4 + Number(ql.replace("Q", "")); };
+  const historicalQuarters = [...new Set((accounts || []).flatMap((a) => Object.keys(a.revenue?.monthly || {}))).values()].map(monthToQuarter);
+  const quarters = [...new Set([
+    ...deals.map((d) => quarterOf(d.closeDate)),
+    ...deals.map((d) => quarterOf(d.closedAt)),
+    ...historicalQuarters,
+  ])].filter((q) => q !== "No date").sort((a, b) => quarterSortKey(a) - quarterSortKey(b));
+  const currentQuarter = quarterOf(today());
+  const [quarter, setQuarter] = useState(quarters.includes(currentQuarter) ? currentQuarter : (quarters[quarters.length - 1] || ""));
   const [quotaDraft, setQuotaDraft] = useState(settings.monthlyQuota);
+
+  /* Real historical revenue for the selected quarter — actual invoiced dollars,
+     independent of whatever deal records do or don't exist for that period. */
+  const qActualMonths = monthsInQuarter(quarter);
+  const actualInvoiced = (accounts || []).reduce((s, a) => s + qActualMonths.reduce((s2, m) => s2 + (a.revenue?.monthly?.[m] || 0), 0), 0);
+  const isPastQuarter = quarterSortKey(quarter) < quarterSortKey(currentQuarter);
 
   const qDeals = deals.filter((d) => quarterOf(d.closeDate) === quarter);
   const byCat = FORECAST_CATS.map((cat) => {
     const list = qDeals.filter((d) => d.forecastCat === cat);
     return { cat, count: list.length, value: list.reduce((s, d) => s + dealValue(d), 0), comm: list.reduce((s, d) => s + dealCommission(d, userById(d.ownerId)?.role), 0) };
   });
-  const reps = (users || []).filter((u) => OWNER_ROLES.includes(u.role) && (!isBD || u.id === me.id));
-  const quarterQuota = (Number(settings.monthlyQuota) || 0) * 3;
-  const evenRepQuota = reps.length ? quarterQuota / reps.length : 0;
+  const qMonths = monthsInQuarter(quarter);
+  const byMonth = qMonths.map((m) => {
+    const list = qDeals.filter((d) => d.closeDate && d.closeDate.slice(5, 7) + "-" + d.closeDate.slice(0, 4) === m);
+    const catBreak = FORECAST_CATS.map((cat) => {
+      const catList = list.filter((d) => d.forecastCat === cat);
+      return { cat, count: catList.length, value: catList.reduce((s, d) => s + dealValue(d), 0) };
+    });
+    const actual = (accounts || []).reduce((s, a) => s + (a.revenue?.monthly?.[m] || 0), 0);
+    return { month: m, count: list.length, value: list.reduce((s, d) => s + dealValue(d), 0), weighted: list.reduce((s, d) => s + dealWeighted(d, stageProb), 0), catBreak, actual };
+  });
+
+  const allReps = (users || []).filter((u) => OWNER_ROLES.includes(u.role));
+  const reps = allReps.filter((u) => !isBD || u.id === me.id);
+  const annualTarget = Number(settings.annualTarget) || 3500000;
+  const repQuotaOverrides = settings.repQuotas || {};
+
+  /* Default annual quota per rep = 25% over their historic invoiced achievement
+     (real billed revenue on accounts they own). Reps with no invoice history yet
+     fall back to an even split of the annual target, so a brand-new rep still
+     has something sensible to be measured against. */
+  const historicAchievement = (rep) => (accounts || []).filter((a) => a.ownerId === rep.id).reduce((s, a) => s + (a.revenue?.total || 0), 0);
+  const isAreaDirector = (rep) => rep.role === "Area Director";
+
+  /* Finishing the year: 30% over the trailing two quarters' actual achievement
+     (the two quarters immediately before whichever is "current" today), used
+     as an alternative planning basis to the full-history +25% figure. This is
+     a combined target for the two remaining quarters, so per-quarter it's /2. */
+  const trailingTwoQuarters = () => {
+    const [ql, y] = currentQuarter.split(" ");
+    const qn = Number(ql.replace("Q", ""));
+    const prev1 = qn === 1 ? `Q4 ${Number(y) - 1}` : `Q${qn - 1} ${y}`;
+    const [pl2, py2] = prev1.split(" ");
+    const qn2 = Number(pl2.replace("Q", ""));
+    const prev2 = qn2 === 1 ? `Q4 ${Number(py2) - 1}` : `Q${qn2 - 1} ${py2}`;
+    return [prev2, prev1];
+  };
+  const trailingTwoQMonths = trailingTwoQuarters().flatMap(monthsInQuarter);
+  const trailingTwoQAchievement = (rep) => (accounts || []).filter((a) => a.ownerId === rep.id)
+    .reduce((s, a) => s + trailingTwoQMonths.reduce((s2, m) => s2 + (a.revenue?.monthly?.[m] || 0), 0), 0);
+  const finishYearTarget = (rep) => trailingTwoQAchievement(rep) * 1.30;
+
+  /* The Area Director carries no personal growth-inflated target — his line is
+     simply whatever his unassigned-accounts book has actually achieved, carried
+     forward flat. His real accountability is the grand total across the team. */
+  const defaultAnnualQuota = (rep) => {
+    if (isAreaDirector(rep)) return historicAchievement(rep);
+    const hist = historicAchievement(rep);
+    return hist > 0 ? hist * 1.25 : (allReps.length ? annualTarget / allReps.length : 0);
+  };
+  const annualQuotaFor = (rep) => Number(repQuotaOverrides[rep.id]) || defaultAnnualQuota(rep);
+  const repQuarterlyQuota = (rep) => annualQuotaFor(rep) / 4;
+
+  const [showQuotaPlan, setShowQuotaPlan] = useState(false);
+  const [targetDraft, setTargetDraft] = useState(annualTarget);
+  const [quotaOverrideDraft, setQuotaOverrideDraft] = useState(() => {
+    const d = {}; allReps.forEach((r) => { d[r.id] = repQuotaOverrides[r.id] ?? Math.round(defaultAnnualQuota(r)); });
+    return d;
+  });
+
+  const quarterQuota = reps.reduce((s, r) => s + repQuarterlyQuota(r), 0);
+  const evenRepQuota = reps.length ? quarterQuota / reps.length : 0; // still used as a display fallback where no rep is selected
 
   const byRep = reps.map((r) => {
     const mine = qDeals.filter((d) => d.ownerId === r.id);
@@ -2136,13 +3017,26 @@ function Forecast({ deals, settings, isAdmin, onQuota, userById, users, isBD, me
     const upsideCat = mine.filter((d) => d.forecastCat === "Upside");
     const pipelineCat = mine.filter((d) => d.forecastCat === "Pipeline");
     const value = mine.reduce((s, d) => s + dealValue(d), 0);
-    const weighted = mine.reduce((s, d) => s + dealWeighted(d), 0);
+    const weighted = mine.reduce((s, d) => s + dealWeighted(d, stageProb), 0);
     const closedVal = won.reduce((s, d) => s + dealValue(d), 0);
     const forecastVal_ = forecastCat.reduce((s, d) => s + dealValue(d), 0);
     const upsideVal = upsideCat.reduce((s, d) => s + dealValue(d), 0);
-    const cov = evenRepQuota > 0 ? ((closedVal + forecastVal_) / evenRepQuota) * 100 : 0;
-    return { r, count: mine.length, value, weighted, closedVal, forecastVal: forecastVal_, upsideVal, pipelineCount: pipelineCat.length, cov };
-  }).sort((a, b) => b.value - a.value);
+    const repQQuota = repQuarterlyQuota(r);
+    // Real invoiced revenue for accounts this rep owns, for the selected quarter —
+    // independent of deal records, so historical quarters still populate even
+    // when there's no CRM deal history reaching that far back.
+    const myAccounts = (accounts || []).filter((a) => a.ownerId === r.id);
+    const actualInvoiced = myAccounts.reduce((s, a) => s + qActualMonths.reduce((s2, m) => s2 + (a.revenue?.monthly?.[m] || 0), 0), 0);
+    const variance = actualInvoiced - closedVal;
+    // Coverage computed two ways: forecast-basis (what the pipeline says) and
+    // actual-basis (real billed revenue) — for a historical quarter the forecast
+    // basis is usually 0 (no deal records reach that far back), so relying on it
+    // alone would show 0% coverage even when the rep actually hit their number.
+    const covForecast = repQQuota > 0 ? ((closedVal + forecastVal_) / repQQuota) * 100 : 0;
+    const covActual = repQQuota > 0 ? (actualInvoiced / repQQuota) * 100 : 0;
+    const cov = covForecast; // kept for any other code still reading the old field name
+    return { r, count: mine.length, value, weighted, closedVal, forecastVal: forecastVal_, upsideVal, pipelineCount: pipelineCat.length, cov, covForecast, covActual, actualInvoiced, variance, repQQuota };
+  }).sort((a, b) => (b.value || b.actualInvoiced) - (a.value || a.actualInvoiced));
   const forecastVal = byCat.find((c) => c.cat === "Forecast")?.value || 0;
   const closed = byCat.find((c) => c.cat === "Closed")?.value || 0;
   const upside = byCat.find((c) => c.cat === "Upside")?.value || 0;
@@ -2155,20 +3049,114 @@ function Forecast({ deals, settings, isAdmin, onQuota, userById, users, isBD, me
         <Field label="Forecast period">
           <select style={{ ...inputStyle, width: "auto" }} value={quarter} onChange={(e) => setQuarter(e.target.value)}>
             {quarters.length === 0 && <option value="">No dated opportunities</option>}
-            {quarters.map((q) => <option key={q}>{q}</option>)}
+            {quarters.map((q) => (
+              <option key={q} value={q}>{q}{q === currentQuarter ? " — current" : quarterSortKey(q) < quarterSortKey(currentQuarter) ? " — historical" : ""}</option>
+            ))}
           </select>
         </Field>
-        <Field label={isAdmin ? "Monthly quota (USD)" : "Monthly quota"}>
-          {isAdmin ? (
-            <div style={{ display: "flex", gap: 6 }}>
-              <input type="number" style={{ ...inputStyle, width: 140 }} value={quotaDraft} onChange={(e) => setQuotaDraft(e.target.value)} />
-              <Btn small onClick={() => onQuota(Number(quotaDraft) || 0)}>Set</Btn>
-            </div>
-          ) : (
-            <div style={{ ...inputStyle, background: C.bg, width: 140 }}>{fmt(settings.monthlyQuota)}</div>
-          )}
+        <Field label="Annual company target">
+          <div style={{ ...inputStyle, background: C.bg, width: 140 }}>{fmt(annualTarget)}</div>
         </Field>
+        {isAdmin && (
+          <Btn small kind="ghost" onClick={() => { setTargetDraft(annualTarget); const d = {}; allReps.forEach((r) => { d[r.id] = repQuotaOverrides[r.id] ?? Math.round(defaultAnnualQuota(r)); }); setQuotaOverrideDraft(d); setShowQuotaPlan(!showQuotaPlan); }}>
+            {showQuotaPlan ? "Hide" : "Edit"} quota plan
+          </Btn>
+        )}
+        {isAdmin && (
+          <Btn small kind="ghost" onClick={() => { setStageProbDraft(stageProb); setShowStageProb(!showStageProb); }}>
+            {showStageProb ? "Hide" : "Edit"} stage probabilities
+          </Btn>
+        )}
       </div>
+
+      {isAdmin && showQuotaPlan && (
+        <Card style={{ padding: 16, marginBottom: 16, borderLeft: `3px solid ${C.green}` }}>
+          <SectionTitle>Annual quota plan</SectionTitle>
+          <div style={{ fontSize: 12, color: C.sub, marginBottom: 10 }}>
+            Default per-rep quota is 25% over their historic invoiced achievement (real billed revenue on accounts they own). Override any rep's number directly — it's saved as an explicit figure and won't drift if their historic achievement changes later.
+          </div>
+          <Field label="Annual company target (USD)">
+            <input type="number" style={{ ...inputStyle, width: 160 }} value={targetDraft} onChange={(e) => setTargetDraft(e.target.value)} />
+          </Field>
+          <div style={{ fontSize: 11, color: C.faint, marginBottom: 8 }}>
+            "Finish-year" is an alternative basis: 30% over the trailing two quarters ({trailingTwoQuarters().join(" + ")}) actual achievement, as a combined target for the two quarters remaining this year — use it instead of the full-history +25% figure if that's the more realistic planning basis right now.
+          </div>
+          <Card style={{ overflowX: "auto" }}>
+            <table>
+              <thead><tr><th>Rep</th><th>Historic achievement</th><th>Default (+25% all-time)</th><th>Finish-year (+30%, trailing 2Q)</th><th>Quota override (annual)</th><th>Quarterly</th></tr></thead>
+              <tbody>
+                {allReps.filter((r) => !isAreaDirector(r)).map((r) => {
+                  const hist = historicAchievement(r);
+                  const def = defaultAnnualQuota(r);
+                  const fy = finishYearTarget(r);
+                  return (
+                    <tr key={r.id}>
+                      <td style={{ fontWeight: 600 }}>{r.name}</td>
+                      <td style={{ fontVariantNumeric: "tabular-nums" }}>{hist ? fmt(hist) : "—"}</td>
+                      <td style={{ fontVariantNumeric: "tabular-nums", color: C.sub }}>{fmt(def)}</td>
+                      <td style={{ fontVariantNumeric: "tabular-nums", color: C.teal }}>{fy ? fmt(fy) + " (combined)" : "—"}</td>
+                      <td><input type="number" style={{ ...inputStyle, width: 130 }} value={quotaOverrideDraft[r.id] ?? Math.round(def)} onChange={(e) => setQuotaOverrideDraft({ ...quotaOverrideDraft, [r.id]: e.target.value })} /></td>
+                      <td style={{ fontVariantNumeric: "tabular-nums", color: C.faint }}>{fmt((Number(quotaOverrideDraft[r.id]) || def) / 4)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Card>
+
+          {allReps.filter(isAreaDirector).map((r) => (
+            <Card key={r.id} style={{ padding: "10px 14px", marginTop: 10, background: C.bg, border: `1px dashed ${C.faint}` }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: C.sub }}>Area Director — not a personal target</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                <div style={{ fontSize: 13 }}>
+                  <strong>{r.name}</strong> — unassigned accounts (interim coverage), carried forward flat, no growth applied
+                </div>
+                <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{fmt(historicAchievement(r))}</div>
+              </div>
+            </Card>
+          ))}
+
+          <Card style={{ padding: "12px 16px", marginTop: 10, background: C.blueDeep, color: "#fff" }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", opacity: 0.8 }}>Total — the Area Director's number</div>
+            <div style={{ display: "flex", gap: 24, marginTop: 6, flexWrap: "wrap" }}>
+              <div><div style={{ fontSize: 20, fontWeight: 800 }}>{fmt(allReps.reduce((s, r) => s + (Number(quotaOverrideDraft[r.id]) || defaultAnnualQuota(r)), 0))}</div><div style={{ fontSize: 10.5, opacity: 0.75 }}>Team quota total (annual)</div></div>
+              <div><div style={{ fontSize: 20, fontWeight: 800 }}>{fmt(annualTarget)}</div><div style={{ fontSize: 10.5, opacity: 0.75 }}>Company target</div></div>
+            </div>
+          </Card>
+          {(() => {
+            const totalQuota = allReps.reduce((s, r) => s + (Number(quotaOverrideDraft[r.id]) || defaultAnnualQuota(r)), 0);
+            const gap = (Number(targetDraft) || 0) - totalQuota;
+            return Math.abs(gap) > 1 ? (
+              <div style={{ fontSize: 12, color: C.amber, marginTop: 8 }}>Sum of rep quotas ({fmt(totalQuota)}) is {gap > 0 ? fmt(gap) + " below" : fmt(-gap) + " above"} the annual target ({fmt(Number(targetDraft) || 0)}) — that's expected when growth is calculated bottom-up per rep rather than divided top-down; adjust individual overrides if you want the two to match exactly.</div>
+            ) : (
+              <div style={{ fontSize: 12, color: C.green, marginTop: 8 }}>Sum of rep quotas matches the annual target.</div>
+            );
+          })()}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+            <Btn small onClick={() => { onQuotaPlan(Number(targetDraft) || 0, quotaOverrideDraft); setShowQuotaPlan(false); }}>Save quota plan</Btn>
+          </div>
+        </Card>
+      )}
+
+      {isAdmin && showStageProb && (
+        <Card style={{ padding: 16, marginBottom: 16, borderLeft: `3px solid ${C.blue}` }}>
+          <SectionTitle>Stage win-probabilities</SectionTitle>
+          <div style={{ fontSize: 12, color: C.sub, marginBottom: 10 }}>
+            Used to compute every deal's Weighted pipeline figure — set here once, applied automatically the next time a deal moves stage (existing deals keep whatever probability they were already assigned).
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {STAGES.filter((s) => s !== "Won" && s !== "Lost").map((s) => (
+              <Field key={s} label={s}>
+                <input type="number" min="0" max="100" style={{ ...inputStyle, width: 80 }} value={stageProbDraft[s]} onChange={(e) => setStageProbDraft({ ...stageProbDraft, [s]: Number(e.target.value) || 0 })} />
+              </Field>
+            ))}
+            <div style={{ marginBottom: 12 }}>
+              <Btn small onClick={() => { onStageProb(stageProbDraft); setShowStageProb(false); }}>Save probabilities</Btn>
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: C.faint }}>Won is always 100%, Lost is always 0% — not editable, since those are certainties by definition.</div>
+        </Card>
+      )}
 
       <Card style={{ padding: 16, marginBottom: 16 }}>
         <SectionTitle>Quota coverage — {quarter || "select a period"} (quarterly quota {fmt(quarterQuota)})</SectionTitle>
@@ -2179,6 +3167,18 @@ function Forecast({ deals, settings, isAdmin, onQuota, userById, users, isBD, me
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.sub, marginTop: 6 }}>
           <span>Closed + Forecast: <strong style={{ color: C.ink }}>{fmt(closed + forecastVal)}</strong> ({coverage.toFixed(0)}%)</span>
           <span>incl. Upside: {fmt(closed + forecastVal + upside)} ({coverageBest.toFixed(0)}%)</span>
+        </div>
+      </Card>
+
+      <Card style={{ padding: 16, marginBottom: 16, borderLeft: `3px solid ${C.green}` }}>
+        <SectionTitle>Actual invoiced (real) — {quarter || "select a period"}</SectionTitle>
+        <div style={{ fontSize: 24, fontWeight: 800, color: C.green }}>{fmt(actualInvoiced)}</div>
+        <div style={{ fontSize: 12, color: C.faint, marginTop: 4 }}>
+          {isPastQuarter
+            ? "This is billed revenue from the invoice history, not a projection — the authoritative figure for a closed quarter."
+            : actualInvoiced > 0
+            ? "Billed so far this quarter, from the invoice history. Will keep updating as invoices land."
+            : "No invoiced revenue recorded yet for this quarter."}
         </div>
       </Card>
 
@@ -2198,20 +3198,56 @@ function Forecast({ deals, settings, isAdmin, onQuota, userById, users, isBD, me
         </table>
       </Card>
 
+      <div style={{ marginTop: 20, marginBottom: 8, fontSize: 13, fontWeight: 700, color: C.ink }}>Monthly breakdown within {quarter || "select a period"}</div>
+      <div style={{ fontSize: 11, color: C.faint, marginBottom: 10 }}>Splits the quarter's opportunities by the month of their expected close date, so you can see which month is carrying the quarter.</div>
+      <Card style={{ overflowX: "auto", marginBottom: 20 }}>
+        <table>
+          <thead><tr><th>Month</th><th>Opportunities</th><th>Pipeline</th><th>Upside</th><th>Forecast</th><th>Closed</th><th>Total</th><th>Weighted</th><th>Actual invoiced</th></tr></thead>
+          <tbody>
+            {byMonth.length === 0 && <tr><td colSpan={9} style={{ color: C.faint, textAlign: "center", padding: 20 }}>Select a quarter to see its monthly split.</td></tr>}
+            {byMonth.map((m) => (
+              <tr key={m.month}>
+                <td style={{ fontWeight: 600 }}>{m.month}</td>
+                <td>{m.count || "—"}</td>
+                {["Pipeline", "Upside", "Forecast", "Closed"].map((cat) => {
+                  const c = m.catBreak.find((x) => x.cat === cat);
+                  return <td key={cat} style={{ fontVariantNumeric: "tabular-nums", color: fcatColor[cat] }}>{c && c.count ? fmt(c.value) : "—"}</td>;
+                })}
+                <td style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{m.count ? fmt(m.value) : "—"}</td>
+                <td style={{ fontVariantNumeric: "tabular-nums", color: C.sub }}>{m.count ? fmt(m.weighted) : "—"}</td>
+                <td style={{ fontVariantNumeric: "tabular-nums", color: C.green, fontWeight: m.actual ? 700 : 400 }}>{m.actual ? fmt(m.actual) : "—"}</td>
+              </tr>
+            ))}
+            {byMonth.length > 0 && (
+              <tr style={{ borderTop: `2px solid ${C.blueDeep}`, fontWeight: 700 }}>
+                <td>Quarter total</td>
+                <td>{byMonth.reduce((s, m) => s + m.count, 0)}</td>
+                {["Pipeline", "Upside", "Forecast", "Closed"].map((cat) => (
+                  <td key={cat} style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(byMonth.reduce((s, m) => s + (m.catBreak.find((x) => x.cat === cat)?.value || 0), 0))}</td>
+                ))}
+                <td style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(byMonth.reduce((s, m) => s + m.value, 0))}</td>
+                <td style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(byMonth.reduce((s, m) => s + m.weighted, 0))}</td>
+                <td style={{ fontVariantNumeric: "tabular-nums", color: C.green }}>{fmt(byMonth.reduce((s, m) => s + m.actual, 0))}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
+
       <div style={{ marginTop: 20, marginBottom: 8, fontSize: 13, fontWeight: 700, color: C.ink }}>Forecast by rep — {quarter || "select a period"}</div>
       <div style={{ fontSize: 11, color: C.faint, marginBottom: 10 }}>
-        Quota coverage per rep is measured against an even split of the team quota ({fmt(evenRepQuota)}/quarter each) — swap in individual quotas once BAI sets them per territory.
+        Quota coverage per rep is measured against their individual annual quota (25% over historic invoiced achievement by default, or an admin override), divided by 4 for the quarter — shown two ways: Coverage (forecast) uses the CRM's deal records (Closed + Forecast category), which reads low or zero for historical quarters with no matching deal history; Coverage (actual) uses real invoiced revenue instead, so it stays meaningful even for periods before any deal existed. "Closed (deals)" is what the CRM's deal records show as Won; "Actual invoiced" is real billed revenue from the invoice history for accounts this rep owns — the two should reconcile, and "Match" flags it when they don't (e.g. a deal marked Won that hasn't actually been invoiced yet, or invoiced revenue with no matching deal record).
       </div>
       <Card style={{ overflowX: "auto" }}>
         <table>
-          <thead><tr><th>Rep</th><th>Open deals</th><th>Pipeline (unweighted)</th><th>Weighted</th><th>Upside</th><th>Forecast</th><th>Closed</th><th>Quota coverage</th></tr></thead>
+          <thead><tr><th>Rep</th><th>Open deals</th><th>Pipeline (unweighted)</th><th>Weighted</th><th>Upside</th><th>Forecast</th><th>Closed (deals)</th><th>Actual invoiced</th><th>Match</th><th>Coverage (forecast)</th><th>Coverage (actual)</th></tr></thead>
           <tbody>
-            {byRep.length === 0 && <tr><td colSpan={8} style={{ color: C.faint, textAlign: "center", padding: 20 }}>No reps in view.</td></tr>}
-            {byRep.map(({ r, count, value, weighted, closedVal, forecastVal, upsideVal, cov }) => (
-              <tr key={r.id}>
+            {byRep.length === 0 && <tr><td colSpan={11} style={{ color: C.faint, textAlign: "center", padding: 20 }}>No reps in view.</td></tr>}
+            {byRep.map(({ r, count, value, weighted, closedVal, forecastVal, upsideVal, covForecast, covActual, actualInvoiced, variance }) => (
+              <tr key={r.id} style={isAreaDirector(r) ? { background: C.bg } : undefined}>
                 <td>
                   <div style={{ fontWeight: 600 }}>{r.name}</div>
-                  <div style={{ fontSize: 11, color: C.faint }}>{r.region || "All territories"}</div>
+                  <div style={{ fontSize: 11, color: C.faint }}>{isAreaDirector(r) ? "Unassigned accounts (interim) — not a personal target" : (r.region || "All territories")}</div>
                 </td>
                 <td>{count}</td>
                 <td style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(value)}</td>
@@ -2219,12 +3255,30 @@ function Forecast({ deals, settings, isAdmin, onQuota, userById, users, isBD, me
                 <td style={{ fontVariantNumeric: "tabular-nums", color: C.amber }}>{upsideVal ? fmt(upsideVal) : "—"}</td>
                 <td style={{ fontVariantNumeric: "tabular-nums", color: C.blue, fontWeight: 600 }}>{forecastVal ? fmt(forecastVal) : "—"}</td>
                 <td style={{ fontVariantNumeric: "tabular-nums", color: C.green, fontWeight: 700 }}>{closedVal ? fmt(closedVal) : "—"}</td>
+                <td style={{ fontVariantNumeric: "tabular-nums", color: C.green, fontWeight: 700 }}>{actualInvoiced ? fmt(actualInvoiced) : "—"}</td>
+                <td>
+                  {!closedVal && !actualInvoiced ? (
+                    <span style={{ color: C.faint }}>—</span>
+                  ) : Math.abs(variance) < 1 ? (
+                    <Tag color={C.green}>Matches</Tag>
+                  ) : (
+                    <Tag color={C.amber}>{variance > 0 ? "+" : ""}{fmt(variance)}</Tag>
+                  )}
+                </td>
                 <td>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <div style={{ width: 60, height: 8, background: C.bg, borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ width: `${Math.min(cov, 100)}%`, height: "100%", background: cov >= 100 ? C.green : C.blue }} />
+                      <div style={{ width: `${Math.min(covForecast, 100)}%`, height: "100%", background: covForecast >= 100 ? C.green : C.blue }} />
                     </div>
-                    <span style={{ fontSize: 12, fontVariantNumeric: "tabular-nums", color: cov >= 100 ? C.green : C.sub, fontWeight: 600 }}>{cov.toFixed(0)}%</span>
+                    <span style={{ fontSize: 12, fontVariantNumeric: "tabular-nums", color: covForecast >= 100 ? C.green : C.sub, fontWeight: 600 }}>{covForecast.toFixed(0)}%</span>
+                  </div>
+                </td>
+                <td>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ width: 60, height: 8, background: C.bg, borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ width: `${Math.min(covActual, 100)}%`, height: "100%", background: covActual >= 100 ? C.green : C.teal }} />
+                    </div>
+                    <span style={{ fontSize: 12, fontVariantNumeric: "tabular-nums", color: covActual >= 100 ? C.green : C.sub, fontWeight: 600 }}>{covActual.toFixed(0)}%</span>
                   </div>
                 </td>
               </tr>
@@ -2238,7 +3292,14 @@ function Forecast({ deals, settings, isAdmin, onQuota, userById, users, isBD, me
 
 /* ------------------------------ Insights --------------------------- */
 
-function Insights({ deals, accounts, quotes, acct, userById }) {
+function Insights({ deals, accounts, quotes, catalog, acct, userById, users, me, isBD, isAdmin, roleOf, payouts }) {
+  const [iview, setIview] = useState("overview");
+  const MONTH_ORDER = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+  const allMonths = [...new Set(accounts.flatMap((a) => Object.keys(a.revenue?.monthly || {})))]
+    .sort((a, b) => { const [ma, ya] = a.split("-"); const [mb, yb] = b.split("-"); return ya === yb ? MONTH_ORDER.indexOf(ma) - MONTH_ORDER.indexOf(mb) : Number(ya) - Number(yb); });
+  const monthlyTotals = allMonths.map((m) => ({ month: m, value: accounts.reduce((s, a) => s + (a.revenue?.monthly?.[m] || 0), 0) }));
+  const topAccountsByRevenue = accounts.filter((a) => a.revenue?.total > 0).sort((a, b) => b.revenue.total - a.revenue.total).slice(0, 8);
+  const totalInvoiced = accounts.reduce((s, a) => s + (a.revenue?.total || 0), 0);
   const closedDeals = deals.filter((d) => d.stage === "Won" || d.stage === "Lost");
   const won = deals.filter((d) => d.stage === "Won");
   const open = deals.filter((d) => d.stage !== "Won" && d.stage !== "Lost");
@@ -2297,8 +3358,25 @@ function Insights({ deals, accounts, quotes, acct, userById }) {
     </Card>
   );
 
+  const IPill = ({ id, label }) => (
+    <button onClick={() => setIview(id)} style={{ background: iview === id ? C.blueDeep : C.surface, color: iview === id ? "#fff" : C.sub, border: `1px solid ${iview === id ? C.blueDeep : C.line}`, borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{label}</button>
+  );
+
   return (
     <div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+        <IPill id="overview" label="Overview" />
+        <IPill id="report" label="Generate Report" />
+      </div>
+
+      {iview === "report" && (
+        <ReportBuilder
+          data={{ deals, accounts, quotes, catalog, acct, userById, allMonths, monthlyTotals, topAccountsByRevenue, totalInvoiced, byRegion, byProduct, byOwner, byLoss, winRate, avgSize, avgCycle, avgRfq, closedDeals, won }}
+          users={users} me={me} isBD={isBD} isAdmin={isAdmin} roleOf={roleOf} payouts={payouts}
+        />
+      )}
+
+      {iview === "overview" && <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
         {kpi("Win rate", winRate === null ? "—" : `${winRate.toFixed(0)}%`, `${won.length} won / ${closedDeals.length} closed`)}
         {kpi("Avg deal size (won)", avgSize === null ? "—" : fmt(avgSize), "Closed-won only")}
@@ -2306,15 +3384,592 @@ function Insights({ deals, accounts, quotes, acct, userById }) {
         {kpi("RFQ → quote", avgRfq === null ? "—" : `${avgRfq.toFixed(1)} days`, `${rfqTimes.length} quotes measured`)}
         {kpi("Accounts in view", accounts.length, "Current scope")}
       </div>
+
+      {allMonths.length > 0 && (
+        <Card style={{ padding: 16, marginBottom: 16 }}>
+          <SectionTitle>Historic invoiced revenue — {fmt(totalInvoiced)} total, {allMonths[0]} to {allMonths[allMonths.length - 1]}</SectionTitle>
+          <div style={{ fontSize: 11, color: C.faint, marginBottom: 10 }}>From Banner's actual invoicing history, reconciled into account records — this is billed revenue, not pipeline estimate.</div>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 90, overflowX: "auto", paddingBottom: 2 }}>
+            {(() => {
+              const max = Math.max(...monthlyTotals.map((m) => m.value), 1);
+              return monthlyTotals.map((m) => (
+                <div key={m.month} title={`${m.month}: ${fmt(m.value)}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 0 22px" }}>
+                  <div style={{ width: 14, height: Math.max((m.value / max) * 74, m.value > 0 ? 3 : 0), background: m.value > 0 ? C.teal : C.bg, borderRadius: "2px 2px 0 0" }} />
+                  <div style={{ fontSize: 8, color: C.faint, marginTop: 3, writingMode: "vertical-rl", transform: "rotate(180deg)", height: 30 }}>{m.month}</div>
+                </div>
+              ));
+            })()}
+          </div>
+        </Card>
+      )}
+
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
         <BarBlock title="Open pipeline by region" rows={byRegion} color={C.blue} />
         <BarBlock title="Open pipeline by product line" rows={byProduct} color={C.teal} />
         <BarBlock title="Open pipeline by owner" rows={byOwner} color={C.amber} />
         <BarBlock title="Lost revenue by reason" rows={byLoss} color={C.red} />
+        {topAccountsByRevenue.length > 0 && (
+          <BarBlock title="Top accounts by invoiced revenue (all-time)" rows={topAccountsByRevenue.map((a) => ({ label: a.name, value: a.revenue.total }))} color={C.green} />
+        )}
       </div>
+      </div>}
     </div>
   );
 }
+
+/* ---------------------------- Report Builder ------------------------ */
+
+function ReportBuilder({ data, users, me, isBD, isAdmin, roleOf, payouts }) {
+  const myCeiling = maxClassFor(me.role);
+  const availableSections = REPORT_SECTIONS.filter((s) => {
+    if (classRank(s.minClass) > classRank(myCeiling)) return false;
+    if (s.roles && !s.roles.includes(me.role)) return false;
+    return true;
+  });
+  const [selected, setSelected] = useState(new Set(availableSections.filter((s) => s.minClass === "Public" || s.id === "kpis").map((s) => s.id)));
+  const [classification, setClassification] = useState(isBD ? "Internal" : "Internal");
+  const [distribution, setDistribution] = useState(new Set(me.id ? [me.id] : []));
+  const [title, setTitle] = useState("Africa Business Development Report");
+  const [preview, setPreview] = useState(false);
+
+  // Date range for time-series sections (revenue trend, funnel, monthly tracking).
+  const allAvailableMonths = [...new Set([...data.allMonths, ...FUNNEL_SEED.months])].sort((a, b) => monthKey(a) - monthKey(b));
+  const [dateFrom, setDateFrom] = useState(allAvailableMonths[0] || "");
+  const [dateTo, setDateTo] = useState(allAvailableMonths[allAvailableMonths.length - 1] || "");
+
+  const toggleSection = (id) => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleDist = (id) => setDistribution((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+
+  // Distribution list is itself access-controlled: you can't distribute a
+  // report to someone whose role ceiling is below the chosen classification.
+  const eligibleRecipients = users.filter((u) => classRank(maxClassFor(u.role)) >= classRank(classification));
+
+  const setClass = (c) => {
+    if (classRank(c) > classRank(myCeiling)) return; // can't exceed your own ceiling
+    setClassification(c);
+    // drop any selected sections that now exceed the new (lower) classification, and any ineligible recipients
+    setSelected((prev) => new Set([...prev].filter((id) => {
+      const s = REPORT_SECTIONS.find((x) => x.id === id);
+      return s && classRank(s.minClass) <= classRank(c);
+    })));
+    setDistribution((prev) => new Set([...prev].filter((id) => classRank(maxClassFor(users.find((u) => u.id === id)?.role)) >= classRank(c))));
+  };
+
+  const canGenerate = selected.size > 0 && distribution.size > 0;
+
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: C.sub, marginBottom: 16 }}>
+        Build a distributable report from live CRM data. Available sections and the maximum classification level are capped by your role ({me.role} → up to <strong>{myCeiling}</strong>).
+      </div>
+
+      <Card style={{ padding: 16, marginBottom: 16 }}>
+        <SectionTitle>Report title</SectionTitle>
+        <input style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} />
+      </Card>
+
+      <Card style={{ padding: 16, marginBottom: 16 }}>
+        <SectionTitle>Reporting period</SectionTitle>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <Field label="From" flex>
+            <select style={inputStyle} value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}>
+              {allAvailableMonths.map((m) => <option key={m} value={m} disabled={monthKey(m) > monthKey(dateTo)}>{m}</option>)}
+            </select>
+          </Field>
+          <Field label="To" flex>
+            <select style={inputStyle} value={dateTo} onChange={(e) => setDateTo(e.target.value)}>
+              {allAvailableMonths.map((m) => <option key={m} value={m} disabled={monthKey(m) < monthKey(dateFrom)}>{m}</option>)}
+            </select>
+          </Field>
+          <Btn small kind="ghost" onClick={() => { setDateFrom(allAvailableMonths[0] || ""); setDateTo(allAvailableMonths[allAvailableMonths.length - 1] || ""); }}>Full range</Btn>
+        </div>
+        <div style={{ fontSize: 11, color: C.faint, marginTop: 6 }}>Applies to the revenue trend, BD funnel, and monthly tracking sections. KPI, pipeline and loss-reason sections reflect the CRM's current live state regardless of this range.</div>
+      </Card>
+
+      <Card style={{ padding: 16, marginBottom: 16 }}>
+        <SectionTitle>Classification</SectionTitle>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {CLASSIFICATIONS.map((c) => {
+            const allowed = classRank(c) <= classRank(myCeiling);
+            return (
+              <button key={c} disabled={!allowed} onClick={() => setClass(c)}
+                style={{
+                  background: classification === c ? CLASS_COLOR[c] : "#fff", color: classification === c ? "#fff" : allowed ? CLASS_COLOR[c] : C.faint,
+                  border: `1.5px solid ${allowed ? CLASS_COLOR[c] : C.line}`, borderRadius: 5, padding: "7px 14px", fontSize: 12.5, fontWeight: 700,
+                  cursor: allowed ? "pointer" : "not-allowed", fontFamily: "inherit", opacity: allowed ? 1 : 0.5,
+                }}>
+                {c}{!allowed && " 🔒"}
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 11, color: C.faint, marginTop: 8 }}>
+          Higher classifications unlock more sensitive sections (named commission figures, individual rep performance) but also restrict who the report may be distributed to below.
+        </div>
+      </Card>
+
+      <Card style={{ padding: 16, marginBottom: 16 }}>
+        <SectionTitle>Sections to include</SectionTitle>
+        {REPORT_SECTIONS.map((s) => {
+          const unlocked = availableSections.some((a) => a.id === s.id) && classRank(s.minClass) <= classRank(classification);
+          return (
+            <label key={s.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "6px 0", fontSize: 13, color: unlocked ? C.ink : C.faint, cursor: unlocked ? "pointer" : "not-allowed" }}>
+              <input type="checkbox" disabled={!unlocked} checked={selected.has(s.id)} onChange={() => toggleSection(s.id)} />
+              {s.label}
+              <Tag color={CLASS_COLOR[s.minClass]}>{s.minClass}+</Tag>
+              {!unlocked && <span style={{ fontSize: 11 }}>— raise classification{s.roles ? " / role-restricted" : ""} to include</span>}
+            </label>
+          );
+        })}
+      </Card>
+
+      <Card style={{ padding: 16, marginBottom: 16 }}>
+        <SectionTitle>Distribution list</SectionTitle>
+        <div style={{ fontSize: 11, color: C.faint, marginBottom: 8 }}>Only people whose role ceiling meets or exceeds "{classification}" are eligible recipients.</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {eligibleRecipients.map((u) => (
+            <label key={u.id} style={{ display: "flex", alignItems: "center", gap: 6, border: `1px solid ${distribution.has(u.id) ? C.blue : C.line}`, background: distribution.has(u.id) ? C.bg : "#fff", borderRadius: 5, padding: "5px 10px", fontSize: 12.5, cursor: "pointer" }}>
+              <input type="checkbox" checked={distribution.has(u.id)} onChange={() => toggleDist(u.id)} />
+              {u.name} <span style={{ color: C.faint }}>({u.role})</span>
+            </label>
+          ))}
+        </div>
+        {eligibleRecipients.length < users.length && (
+          <div style={{ fontSize: 11, color: C.amber, marginTop: 8 }}>{users.length - eligibleRecipients.length} user(s) hidden — their role ceiling is below "{classification}".</div>
+        )}
+      </Card>
+
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Btn onClick={() => canGenerate && setPreview(true)} disabled={!canGenerate}>Generate report</Btn>
+      </div>
+
+      {preview && (
+        <ReportDocModal
+          title={title} classification={classification} sections={[...selected]}
+          distribution={[...distribution].map((id) => users.find((u) => u.id === id)).filter(Boolean)}
+          preparedBy={me} data={data} users={users} roleOf={roleOf} payouts={payouts}
+          dateFrom={dateFrom} dateTo={dateTo}
+          onClose={() => setPreview(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+
+function computeCommissionSummary(data, users, roleOf, payouts) {
+  const owners = users.filter((u) => OWNER_ROLES.includes(u.role));
+  const q = quarterOf(today());
+  return owners.map((o) => {
+    const relevant = data.deals.filter((d) => d.ownerId === o.id || (d.agreement && d.agreement.assistBDId === o.id));
+    const won = relevant.filter((d) => d.stage === "Won");
+    const collected = won.filter((d) => d.collectedAt);
+    const shareOf = (d) => commissionShare(d, o.id, roleOf);
+    const maturedAll = collected.reduce((s, d) => s + shareOf(d), 0);
+    const paid = payouts.filter((p) => p.ownerId === o.id).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    return { name: o.name, maturedAll, payable: Math.max(0, maturedAll - paid) };
+  }).filter((r) => r.maturedAll > 0);
+}
+
+function ReportDocModal({ title, classification, sections, distribution, preparedBy, data, users, roleOf, payouts, dateFrom, dateTo, onClose }) {
+  const genDate = today();
+  const period = dateFrom && dateTo ? `${dateFrom} to ${dateTo}` : (data.allMonths.length ? `${data.allMonths[0]} to ${data.allMonths[data.allMonths.length - 1]}` : "Current pipeline snapshot");
+  const commissionRows = sections.includes("commission") ? computeCommissionSummary(data, users, roleOf, payouts) : [];
+
+  // Filter time-series sections down to the chosen range without touching the parent's full-range data.
+  const rangedMonths = data.allMonths.filter((m) => monthInRange(m, dateFrom, dateTo));
+  const rangedMonthlyTotals = data.monthlyTotals.filter((m) => monthInRange(m.month, dateFrom, dateTo));
+  const rangedRevenueTotal = rangedMonthlyTotals.reduce((s, m) => s + m.value, 0);
+  const rangedFunnel = filterFunnel(dateFrom, dateTo);
+  const monthlyTableMonths = [...new Set([...rangedMonths, ...rangedFunnel.months])].sort((a, b) => monthKey(a) - monthKey(b));
+  const stageTracking = sections.includes("stageTracking") ? buildStageTracking(data.deals, dateFrom, dateTo) : null;
+  const invoiceAging = sections.includes("invoiceAging") ? buildInvoiceAging(data.deals, data.quotes) : null;
+  const repDetail = sections.includes("repDetail") ? buildRepDetail(data.deals, data.quotes, users, roleOf, payouts) : null;
+  const productDetail = sections.includes("productDetail") ? buildProductDetail(data.deals, data.quotes, data.catalog) : null;
+  const accountDetail = sections.includes("accountDetail") ? buildAccountDetail(data.accounts, data.deals, data.userById) : null;
+  const aircraftDetail = sections.includes("aircraftDetail") ? buildAircraftDetail(data.accounts, data.deals) : null;
+  const rawMatrix = sections.includes("rawMatrix") ? buildRawMatrix(data.accounts, dateFrom, dateTo) : null;
+
+  const downloadPdf = () => {
+    try {
+      const pdf = buildReportPdf({ title, classification, sections, distribution, preparedBy, data, genDate, period, dateFrom, dateTo, commissionRows, stageTracking, invoiceAging, repDetail, productDetail, accountDetail, aircraftDetail, rawMatrix });
+      const bytes = new Uint8Array(pdf.length);
+      for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const el = document.createElement("a");
+      el.href = url;
+      el.download = `${title.replace(/[^a-z0-9]+/gi, "_")}_${genDate}.pdf`;
+      document.body.appendChild(el);
+      el.click();
+      document.body.removeChild(el);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } catch (e) { console.error("Report PDF generation failed", e); }
+  };
+
+  const SecTitle = ({ children }) => <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "#0C3557", margin: "16px 0 8px" }}>{children}</div>;
+  const barRow = (label, value, max, color) => (
+    <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+      <div style={{ width: 130, fontSize: 11.5, color: "#5A6B78", flexShrink: 0 }}>{label}</div>
+      <div style={{ flex: 1, background: "#F4F6F8", borderRadius: 3, height: 14 }}><div style={{ width: `${max ? (value / max) * 100 : 0}%`, minWidth: value > 0 ? 3 : 0, height: "100%", background: color, borderRadius: 3 }} /></div>
+      <div style={{ width: 80, fontSize: 11.5, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{fmt(value)}</div>
+    </div>
+  );
+
+  return (
+    <Modal title={`Report preview — ${title}`} onClose={onClose} wide>
+      <div style={{ border: "1px solid #DDE3E9", borderRadius: 6, overflow: "hidden", background: "#fff" }}>
+        <div style={{ background: "#0C3557", color: "#fff", padding: "16px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Plane size={22} style={{ transform: "rotate(-45deg)", color: "#3EC9B0" }} />
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 800 }}>BANNER AIRCRAFT INTERNATIONAL</div>
+              <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#3EC9B0" }}>Africa Business Development</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 19, fontWeight: 800, marginTop: 12 }}>{title}</div>
+        </div>
+        <div style={{ background: CLASS_COLOR[classification], color: "#fff", padding: "6px 20px", fontSize: 12, fontWeight: 800, letterSpacing: "0.08em", textAlign: "center" }}>
+          {classification.toUpperCase()} — NOT FOR DISTRIBUTION OUTSIDE THE LIST BELOW
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px,1fr))", gap: 10, padding: "14px 20px", borderBottom: "1px solid #E4E9EE" }}>
+          <div><div style={{ fontSize: 9, color: "#5A6B78", textTransform: "uppercase" }}>Prepared by</div><div style={{ fontWeight: 600 }}>{preparedBy.name}</div></div>
+          <div><div style={{ fontSize: 9, color: "#5A6B78", textTransform: "uppercase" }}>Generated</div><div style={{ fontWeight: 600 }}>{genDate}</div></div>
+          <div><div style={{ fontSize: 9, color: "#5A6B78", textTransform: "uppercase" }}>Period</div><div style={{ fontWeight: 600 }}>{period}</div></div>
+          <div><div style={{ fontSize: 9, color: "#5A6B78", textTransform: "uppercase" }}>Distribution</div><div style={{ fontWeight: 600 }}>{distribution.map((u) => u.name).join(", ") || "—"}</div></div>
+        </div>
+
+        <div style={{ padding: "4px 20px 16px" }}>
+          {sections.includes("kpis") && (
+            <>
+              <SecTitle>Executive KPIs</SecTitle>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+                {[["Win rate", data.winRate === null ? "—" : `${data.winRate.toFixed(0)}%`], ["Avg deal size", data.avgSize === null ? "—" : fmt(data.avgSize)], ["Avg cycle", data.avgCycle === null ? "—" : `${Math.round(data.avgCycle)}d`], ["RFQ→quote", data.avgRfq === null ? "—" : `${data.avgRfq.toFixed(1)}d`]].map(([l, v]) => (
+                  <div key={l} style={{ minWidth: 100 }}><div style={{ fontSize: 18, fontWeight: 800 }}>{v}</div><div style={{ fontSize: 10, color: "#5A6B78", textTransform: "uppercase" }}>{l}</div></div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {sections.includes("revenue") && rangedMonthlyTotals.length > 0 && (
+            <>
+              <SecTitle>Historic invoiced revenue — {fmt(rangedRevenueTotal)} in range ({period})</SecTitle>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 60 }}>
+                {(() => { const max = Math.max(...rangedMonthlyTotals.map((m) => m.value), 1); return rangedMonthlyTotals.map((m) => (
+                  <div key={m.month} title={`${m.month}: ${fmt(m.value)}`} style={{ width: 10, height: Math.max((m.value / max) * 50, m.value > 0 ? 2 : 0), background: "#0E6E6E", borderRadius: "1px 1px 0 0" }} />
+                )); })()}
+              </div>
+            </>
+          )}
+
+          {sections.includes("funnel") && (
+            <>
+              <SecTitle>BD funnel — RFQ → Quote → Sales Order → Invoice</SecTitle>
+              <div style={{ fontSize: 10.5, color: "#B8720F", marginBottom: 6 }}>Scope note: this funnel export's invoiced total matches a single account's invoice history — confirm whether it represents one account or the full territory before presenting externally.</div>
+              {(() => {
+                const rfq = rangedFunnel.rfqUniquePN.reduce((a, b) => a + b, 0);
+                const quoted = rangedFunnel.quotedUniquePN.reduce((a, b) => a + b, 0);
+                const so = rangedFunnel.totalSOCount.reduce((a, b) => a + b, 0);
+                const soVal = rangedFunnel.totalSOValue.reduce((a, b) => a + b, 0);
+                const quotedVal = rangedFunnel.totalQuotesValue.reduce((a, b) => a + b, 0);
+                return (
+                  <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+                    <div><div style={{ fontSize: 16, fontWeight: 800 }}>{rfq}</div><div style={{ fontSize: 10, color: "#5A6B78" }}>RFQ lines (unique PN)</div></div>
+                    <div><div style={{ fontSize: 16, fontWeight: 800 }}>{quoted}</div><div style={{ fontSize: 10, color: "#5A6B78" }}>Quoted ({rfq ? ((quoted / rfq) * 100).toFixed(0) : 0}% of RFQ)</div></div>
+                    <div><div style={{ fontSize: 16, fontWeight: 800 }}>{fmt(quotedVal)}</div><div style={{ fontSize: 10, color: "#5A6B78" }}>Total quoted value</div></div>
+                    <div><div style={{ fontSize: 16, fontWeight: 800 }}>{so}</div><div style={{ fontSize: 10, color: "#5A6B78" }}>Sales orders raised</div></div>
+                    <div><div style={{ fontSize: 16, fontWeight: 800 }}>{fmt(soVal)}</div><div style={{ fontSize: 10, color: "#5A6B78" }}>SO value ({quotedVal ? ((soVal / quotedVal) * 100).toFixed(1) : 0}% of quoted)</div></div>
+                  </div>
+                );
+              })()}
+            </>
+          )}
+
+          {sections.includes("monthlyDetail") && monthlyTableMonths.length > 0 && (
+            <>
+              <SecTitle>Monthly tracking — {period}</SecTitle>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid #0C3557" }}>
+                    {["Month", "Invoiced", "RFQ lines", "Quoted", "Quoted value", "SO count", "SO value"].map((h) => (
+                      <th key={h} style={{ textAlign: h === "Month" ? "left" : "right", padding: "4px 6px", fontSize: 9.5, textTransform: "uppercase", color: "#5A6B78" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {monthlyTableMonths.map((m) => {
+                    const rev = rangedMonthlyTotals.find((x) => x.month === m)?.value || 0;
+                    const fi = rangedFunnel.months.indexOf(m);
+                    const row = fi === -1 ? { rfq: 0, quoted: 0, quotedVal: 0, so: 0, soVal: 0 } : {
+                      rfq: rangedFunnel.rfqUniquePN[fi], quoted: rangedFunnel.quotedUniquePN[fi],
+                      quotedVal: rangedFunnel.totalQuotesValue[fi], so: rangedFunnel.totalSOCount[fi], soVal: rangedFunnel.totalSOValue[fi],
+                    };
+                    return (
+                      <tr key={m} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                        <td style={{ padding: "3px 6px", fontWeight: 600 }}>{m}</td>
+                        <td style={{ padding: "3px 6px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{rev ? fmt(rev) : "—"}</td>
+                        <td style={{ padding: "3px 6px", textAlign: "right" }}>{row.rfq || "—"}</td>
+                        <td style={{ padding: "3px 6px", textAlign: "right" }}>{row.quoted || "—"}</td>
+                        <td style={{ padding: "3px 6px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{row.quotedVal ? fmt(row.quotedVal) : "—"}</td>
+                        <td style={{ padding: "3px 6px", textAlign: "right" }}>{row.so || "—"}</td>
+                        <td style={{ padding: "3px 6px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{row.soVal ? fmt(row.soVal) : "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {sections.includes("stageTracking") && stageTracking && stageTracking.months.length > 0 && (
+            <>
+              <SecTitle>Sales stage tracking by month</SecTitle>
+              <div style={{ fontSize: 10, color: "#8CA0AE", marginBottom: 6 }}>Deals predating this feature carry a single baseline entry rather than a full transition history.</div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10.5 }}>
+                <thead><tr style={{ borderBottom: "2px solid #0C3557" }}>
+                  <th style={{ textAlign: "left", padding: "3px 5px", fontSize: 9, color: "#5A6B78" }}>Month</th>
+                  {STAGES.map((st) => <th key={st} style={{ textAlign: "right", padding: "3px 5px", fontSize: 8.5, color: "#5A6B78" }}>{st}</th>)}
+                </tr></thead>
+                <tbody>
+                  {stageTracking.months.map((m) => (
+                    <tr key={m} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                      <td style={{ padding: "3px 5px", fontWeight: 600 }}>{m}</td>
+                      {STAGES.map((st) => {
+                        const cell = stageTracking.rows[m]?.[st];
+                        return <td key={st} style={{ padding: "3px 5px", textAlign: "right" }}>{cell ? `${cell.count} · ${fmt(cell.value)}` : "—"}</td>;
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {sections.includes("invoiceAging") && invoiceAging && (
+            <>
+              <SecTitle>Invoice collection & aging — {fmt(invoiceAging.totalOutstanding)} outstanding</SecTitle>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 8 }}>
+                {AGING_BUCKETS.map((b) => (
+                  <div key={b} style={{ minWidth: 90 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: b === "Current" ? "#256E4E" : b === "90+ days" ? "#A63A3A" : "#B8720F" }}>{fmt(invoiceAging.buckets[b].value)}</div>
+                    <div style={{ fontSize: 9.5, color: "#5A6B78" }}>{b} ({invoiceAging.buckets[b].count})</div>
+                  </div>
+                ))}
+              </div>
+              {invoiceAging.lines.length > 0 && (
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10.5 }}>
+                  <thead><tr style={{ borderBottom: "2px solid #0C3557" }}>
+                    <th style={{ textAlign: "left", padding: "3px 5px", fontSize: 9, color: "#5A6B78" }}>Deal</th>
+                    <th style={{ textAlign: "right", padding: "3px 5px", fontSize: 9, color: "#5A6B78" }}>Value</th>
+                    <th style={{ textAlign: "left", padding: "3px 5px", fontSize: 9, color: "#5A6B78" }}>Terms</th>
+                    <th style={{ textAlign: "right", padding: "3px 5px", fontSize: 9, color: "#5A6B78" }}>Aging</th>
+                  </tr></thead>
+                  <tbody>
+                    {invoiceAging.lines.slice(0, 12).map((l, i) => (
+                      <tr key={i} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                        <td style={{ padding: "3px 5px" }}>{l.name}</td>
+                        <td style={{ padding: "3px 5px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{fmt(l.value)}</td>
+                        <td style={{ padding: "3px 5px", fontSize: 10 }}>{l.terms}</td>
+                        <td style={{ padding: "3px 5px", textAlign: "right", fontWeight: 700, color: l.daysOverdue > 0 ? "#A63A3A" : "#256E4E" }}>{l.bucket}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
+
+          {sections.includes("repDetail") && repDetail && repDetail.length > 0 && (
+            <>
+              <SecTitle>Detailed breakdown — per rep</SecTitle>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10.5 }}>
+                <thead><tr style={{ borderBottom: "2px solid #0C3557" }}>
+                  {["Rep", "Region", "Open (#/$)", "Weighted", "Quotes (#/$)", "Won (#/$)", "Comm. matured", "Comm. payable"].map((h) => (
+                    <th key={h} style={{ textAlign: h === "Rep" || h === "Region" ? "left" : "right", padding: "4px 5px", fontSize: 9, color: "#5A6B78" }}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {repDetail.map((r) => (
+                    <tr key={r.name} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                      <td style={{ padding: "3px 5px", fontWeight: 600 }}>{r.name}</td>
+                      <td style={{ padding: "3px 5px", fontSize: 10, color: "#5A6B78" }}>{r.region}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.openCount} / {fmt(r.openValue)}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{fmt(r.weighted)}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.quotesCount} / {fmt(r.quotesValue)}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.wonCount} / {fmt(r.wonValue)}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right", color: "#256E4E" }}>{fmt(r.maturedComm)}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right", color: "#B8720F" }}>{fmt(r.payableComm)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {sections.includes("productDetail") && productDetail && productDetail.length > 0 && (
+            <>
+              <SecTitle>Detailed breakdown — per product line</SecTitle>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10.5 }}>
+                <thead><tr style={{ borderBottom: "2px solid #0C3557" }}>
+                  {["Product line", "Catalog items", "Open pipeline (#/$)", "Quoted (#/$)", "Won (#/$)"].map((h) => (
+                    <th key={h} style={{ textAlign: h === "Product line" ? "left" : "right", padding: "4px 5px", fontSize: 9, color: "#5A6B78" }}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {productDetail.map((r) => (
+                    <tr key={r.label} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                      <td style={{ padding: "3px 5px", fontWeight: 600 }}>{r.label}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.catalogItems}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.openCount} / {fmt(r.openValue)}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.quotesCount} / {fmt(r.quotesValue)}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.wonCount} / {fmt(r.wonValue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {sections.includes("accountDetail") && accountDetail && accountDetail.length > 0 && (
+            <>
+              <SecTitle>Detailed breakdown — per airline / account ({accountDetail.length} accounts)</SecTitle>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10 }}>
+                <thead><tr style={{ borderBottom: "2px solid #0C3557" }}>
+                  {["Account", "Region", "Tier", "Owner", "Fleet", "Invoiced", "Last active", "Open pipeline", "Won", "Registration"].map((h) => (
+                    <th key={h} style={{ textAlign: ["Account", "Region", "Owner", "Registration"].includes(h) ? "left" : "right", padding: "3px 4px", fontSize: 8.5, color: "#5A6B78" }}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {accountDetail.map((a) => (
+                    <tr key={a.name} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                      <td style={{ padding: "3px 4px", fontWeight: 600 }}>{a.name}</td>
+                      <td style={{ padding: "3px 4px", fontSize: 9.5, color: "#5A6B78" }}>{a.region}</td>
+                      <td style={{ padding: "3px 4px" }}><Tag color={tierColor[a.tier]}>{a.tier}</Tag></td>
+                      <td style={{ padding: "3px 4px", fontSize: 9.5 }}>{a.owner}</td>
+                      <td style={{ padding: "3px 4px", textAlign: "right" }}>{a.fleetSize || "—"}</td>
+                      <td style={{ padding: "3px 4px", textAlign: "right", fontWeight: a.invoiced ? 700 : 400 }}>{a.invoiced ? fmt(a.invoiced) : "—"}</td>
+                      <td style={{ padding: "3px 4px", fontSize: 9.5 }}>{a.lastActive}</td>
+                      <td style={{ padding: "3px 4px", textAlign: "right" }}>{a.openValue ? fmt(a.openValue) : "—"}</td>
+                      <td style={{ padding: "3px 4px", textAlign: "right" }}>{a.wonCount || "—"}</td>
+                      <td style={{ padding: "3px 4px", fontSize: 9.5 }}>{a.regStatus}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {sections.includes("aircraftDetail") && aircraftDetail && aircraftDetail.length > 0 && (
+            <>
+              <SecTitle>Detailed breakdown — per aircraft model</SecTitle>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10.5 }}>
+                <thead><tr style={{ borderBottom: "2px solid #0C3557" }}>
+                  {["Model", "OEM", "Tails in territory", "Operators", "Open pipeline on operators", "Engaged"].map((h) => (
+                    <th key={h} style={{ textAlign: h === "Model" || h === "OEM" ? "left" : "right", padding: "4px 5px", fontSize: 9, color: "#5A6B78" }}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {aircraftDetail.map((r) => (
+                    <tr key={r.label} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                      <td style={{ padding: "3px 5px", fontWeight: 600 }}>{r.label}</td>
+                      <td style={{ padding: "3px 5px", fontSize: 10, color: "#5A6B78" }}>{r.oem}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right", fontWeight: 700 }}>{r.tails}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.operators}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.openPipeline ? fmt(r.openPipeline) : "—"}</td>
+                      <td style={{ padding: "3px 5px", textAlign: "right" }}>{r.engagedCount}/{r.operators}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {sections.includes("rawMatrix") && rawMatrix && rawMatrix.rows.length > 0 && (
+            <>
+              <SecTitle>Raw invoice data — account × month — {fmt(rawMatrix.grandTotal)} total, {rawMatrix.rows.length} accounts</SecTitle>
+              <div style={{ fontSize: 10.5, color: "#5A6B78", marginBottom: 6 }}>Exact figures from the invoice export — no rounding to a top-N list, no aggregation. Scroll horizontally for the full month range.</div>
+              <div style={{ overflowX: "auto", border: "1px solid #E4E9EE", borderRadius: 4 }}>
+                <table style={{ width: "max-content", minWidth: "100%", borderCollapse: "collapse", fontSize: 10 }}>
+                  <thead>
+                    <tr style={{ borderBottom: "2px solid #0C3557" }}>
+                      <th style={{ position: "sticky", left: 0, background: "#fff", textAlign: "left", padding: "4px 8px", fontSize: 9, color: "#5A6B78", whiteSpace: "nowrap" }}>Account</th>
+                      <th style={{ textAlign: "right", padding: "4px 6px", fontSize: 9, color: "#5A6B78", whiteSpace: "nowrap" }}>Total</th>
+                      {rawMatrix.months.map((m) => <th key={m} style={{ textAlign: "right", padding: "4px 6px", fontSize: 9, color: "#5A6B78", whiteSpace: "nowrap" }}>{m}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rawMatrix.rows.map((r) => (
+                      <tr key={r.name} style={{ borderBottom: "1px solid #E4E9EE" }}>
+                        <td style={{ position: "sticky", left: 0, background: "#fff", padding: "3px 8px", fontWeight: 600, whiteSpace: "nowrap" }}>{r.name}</td>
+                        <td style={{ padding: "3px 6px", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{fmt(r.total)}</td>
+                        {r.values.map((v, i) => <td key={i} style={{ padding: "3px 6px", textAlign: "right", fontVariantNumeric: "tabular-nums", color: v ? "#15242F" : "#C7D0D8" }}>{v ? fmt(v).replace("$", "") : "·"}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {sections.includes("topAccounts") && data.topAccountsByRevenue.length > 0 && (
+            <>
+              <SecTitle>Top accounts by invoiced revenue</SecTitle>
+              {(() => { const max = Math.max(...data.topAccountsByRevenue.map((a) => a.revenue.total)); return data.topAccountsByRevenue.map((a) => barRow(a.name, a.revenue.total, max, "#256E4E")); })()}
+            </>
+          )}
+
+          {sections.includes("region") && data.byRegion.length > 0 && (
+            <>
+              <SecTitle>Open pipeline by region</SecTitle>
+              {(() => { const max = Math.max(...data.byRegion.map((r) => r.value)); return data.byRegion.map((r) => barRow(r.label, r.value, max, "#14538C")); })()}
+            </>
+          )}
+
+          {sections.includes("product") && data.byProduct.length > 0 && (
+            <>
+              <SecTitle>Open pipeline by product line</SecTitle>
+              {(() => { const max = Math.max(...data.byProduct.map((r) => r.value)); return data.byProduct.map((r) => barRow(r.label, r.value, max, "#0E6E6E")); })()}
+            </>
+          )}
+
+          {sections.includes("owner") && data.byOwner.length > 0 && (
+            <>
+              <SecTitle>Open pipeline by owner</SecTitle>
+              {(() => { const max = Math.max(...data.byOwner.map((r) => r.value)); return data.byOwner.map((r) => barRow(r.label, r.value, max, "#B8720F")); })()}
+            </>
+          )}
+
+          {sections.includes("loss") && data.byLoss.length > 0 && (
+            <>
+              <SecTitle>Lost deal reasons</SecTitle>
+              {(() => { const max = Math.max(...data.byLoss.map((r) => r.value)); return data.byLoss.map((r) => barRow(r.label, r.value, max, "#A63A3A")); })()}
+            </>
+          )}
+
+          {sections.includes("commission") && (
+            <>
+              <SecTitle>Commission summary — matured, by rep</SecTitle>
+              {commissionRows.length === 0 ? (
+                <div style={{ fontSize: 11.5, color: "#5A6B78" }}>No matured commission recorded yet.</div>
+              ) : (() => { const max = Math.max(...commissionRows.map((r) => r.maturedAll)); return commissionRows.map((r) => barRow(`${r.name} (payable ${fmt(r.payable)})`, r.maturedAll, max, "#0C3557")); })()}
+            </>
+          )}
+        </div>
+
+        <div style={{ background: CLASS_COLOR[classification], color: "#fff", padding: "6px 20px", fontSize: 10.5, fontWeight: 700, textAlign: "center" }}>
+          {classification.toUpperCase()} · Banner Aircraft International — Africa Area · Generated {genDate}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+        <div style={{ fontSize: 11, color: C.faint }}>Distribution list and classification are recorded on the document itself.</div>
+        <Btn onClick={downloadPdf}><Download size={14} /> Download PDF</Btn>
+      </div>
+    </Modal>
+  );
+}
+
 
 /* ---------------------------- Aircraft 360 -------------------------- */
 
@@ -3164,7 +4819,7 @@ function ProductForm({ item, onSave, onClose }) {
   );
 }
 
-function DealForm({ item, accounts, owners, me, lockOwner, roleOf, onSave, onClose }) {
+function DealForm({ item, accounts, owners, me, lockOwner, roleOf, stageProb, onSave, onClose }) {
   const [f, setF] = useState(item || {
     id: uid(), name: "", accountId: accounts[0]?.id || "", ownerId: me.id,
     lines: [{ product: "Oshino Lamps", value: 0 }],
@@ -3173,7 +4828,7 @@ function DealForm({ item, accounts, owners, me, lockOwner, roleOf, onSave, onClo
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const setStageLocal = (e) => {
     const stage = e.target.value;
-    setF({ ...f, stage, prob: STAGE_PROB[stage] ?? f.prob, forecastCat: STAGE_FCAT[stage] || f.forecastCat, closedAt: (stage === "Won" || stage === "Lost") ? (f.closedAt || today()) : "" });
+    setF({ ...f, stage, prob: stageProb?.[stage] ?? STAGE_PROB[stage] ?? f.prob, forecastCat: STAGE_FCAT[stage] || f.forecastCat, closedAt: (stage === "Won" || stage === "Lost") ? (f.closedAt || today()) : "" });
   };
   const setLine = (i, k, v) => setF({ ...f, lines: f.lines.map((l, idx) => (idx === i ? { ...l, [k]: v } : l)) });
   const addLine = () => setF({ ...f, lines: [...f.lines, { product: "Oshino Lamps", value: 0 }] });
@@ -3379,42 +5034,82 @@ function InteractionForm({ account, onSave, onClose }) {
 
 function UsersForm({ users, onSave, onClose }) {
   const [list, setList] = useState(users);
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("Territory Manager (BD)");
-  const [region, setRegion] = useState("East Africa");
-  const add = () => {
-    if (!name.trim()) return;
-    setList([...list, { id: uid(), name: name.trim(), role, region: role === "Territory Manager (BD)" ? region : "" }]);
-    setName("");
+  const blank = { name: "", email: "", role: "Territory Manager (BD)", region: "East Africa", reportsTo: list.find((u) => u.role === "Area Director")?.id || "" };
+  const [draft, setDraft] = useState(blank);
+  const [editingId, setEditingId] = useState(null);
+  const admin = list.find((u) => u.role === "Area Director");
+
+  const startEdit = (u) => { setEditingId(u.id); setDraft({ name: u.name, email: u.email || "", role: u.role, region: u.region || "", reportsTo: u.reportsTo || "" }); };
+  const cancelEdit = () => { setEditingId(null); setDraft(blank); };
+
+  const save = () => {
+    if (!draft.name.trim()) return;
+    const email = draft.email.trim() || emailOf(draft.name);
+    const region = draft.role === "Territory Manager (BD)" ? draft.region : "";
+    if (editingId) {
+      setList(list.map((u) => (u.id === editingId ? { ...u, name: draft.name.trim(), email, role: draft.role, region, reportsTo: draft.role === "Area Director" ? "" : draft.reportsTo } : u)));
+    } else {
+      setList([...list, { id: uid(), name: draft.name.trim(), email, role: draft.role, region, reportsTo: draft.role === "Area Director" ? "" : draft.reportsTo }]);
+    }
+    cancelEdit();
   };
+
+  const remove = (id) => {
+    setList(list.filter((u) => u.id !== id).map((u) => (u.reportsTo === id ? { ...u, reportsTo: admin?.id || "" } : u)));
+    if (editingId === id) cancelEdit();
+  };
+
+  const nameOf = (id) => list.find((u) => u.id === id)?.name || "—";
+
   return (
-    <Modal title="Users & roles" onClose={onClose} wide>
+    <Modal title="Users, roles & reporting lines" onClose={onClose} wide>
       <div style={{ fontSize: 12, color: C.sub, marginBottom: 12 }}>
-        BDs are locked to their territory. COO, CEO and President see everything read-only and approve quotes at their level. Analysts are pure read-only.
+        Role determines access automatically: BDs are locked to their territory's accounts; COO/CEO/President see everything read-only and approve quotes at their matrix level; Analyst &amp; Operations can update the catalog; Finance processes payouts. Reporting line is organizational only — it doesn't change access, but drives things like escalation context and org charts.
       </div>
       {list.map((u) => (
-        <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${C.bg}`, gap: 8 }}>
+        <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${C.bg}`, gap: 8, flexWrap: "wrap" }}>
           <div style={{ minWidth: 0 }}>
             <span style={{ fontWeight: 600, fontSize: 14 }}>{u.name}</span>
             {u.region && <span style={{ fontSize: 12, color: C.faint, marginLeft: 8 }}>{u.region}</span>}
+            <div style={{ fontSize: 11, color: C.faint }}>
+              {u.email || emailOf(u.name)}{u.reportsTo ? <> · reports to <strong>{nameOf(u.reportsTo)}</strong></> : u.role === "Area Director" ? " · top of reporting line" : ""}
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             <Tag color={roleColorMap[u.role] || C.faint}>{u.role}</Tag>
-            {list.length > 1 && <IconBtn onClick={() => setList(list.filter((x) => x.id !== u.id))} color={C.red}><Trash2 size={14} /></IconBtn>}
+            <IconBtn onClick={() => startEdit(u)}><Pencil size={14} /></IconBtn>
+            {list.length > 1 && u.role !== "Area Director" && <IconBtn onClick={() => remove(u.id)} color={C.red}><Trash2 size={14} /></IconBtn>}
           </div>
         </div>
       ))}
-      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-        <input style={{ ...inputStyle, flex: "2 1 140px" }} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
-        <select style={{ ...inputStyle, flex: "1 1 160px" }} value={role} onChange={(e) => setRole(e.target.value)}>{ROLE_NAMES.map((r) => <option key={r}>{r}</option>)}</select>
-        {role === "Territory Manager (BD)" && (
-          <select style={{ ...inputStyle, flex: "1 1 130px" }} value={region} onChange={(e) => setRegion(e.target.value)}>{REGIONS.map((r) => <option key={r}>{r}</option>)}</select>
-        )}
-        <Btn small onClick={add}>Add</Btn>
+
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: C.sub, marginTop: 16, marginBottom: 8 }}>
+        {editingId ? "Edit user" : "Create user"}
       </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <input style={{ ...inputStyle, flex: "2 1 160px" }} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="Full name" />
+        <input style={{ ...inputStyle, flex: "2 1 200px" }} value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} placeholder={draft.name ? emailOf(draft.name) : "email@banner.aero (auto if blank)"} />
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+        <select style={{ ...inputStyle, flex: "1 1 170px" }} value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })} disabled={editingId === admin?.id}>
+          {ROLE_NAMES.filter((r) => r !== "Area Director" || editingId === admin?.id).map((r) => <option key={r}>{r}</option>)}
+        </select>
+        {draft.role === "Territory Manager (BD)" && (
+          <select style={{ ...inputStyle, flex: "1 1 140px" }} value={draft.region} onChange={(e) => setDraft({ ...draft, region: e.target.value })}>{REGIONS.map((r) => <option key={r}>{r}</option>)}</select>
+        )}
+        {draft.role !== "Area Director" && (
+          <select style={{ ...inputStyle, flex: "1 1 160px" }} value={draft.reportsTo} onChange={(e) => setDraft({ ...draft, reportsTo: e.target.value })}>
+            <option value="">Reports to…</option>
+            {list.filter((u) => u.id !== editingId).map((u) => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+          </select>
+        )}
+        <Btn small onClick={save}>{editingId ? "Save changes" : "Create user"}</Btn>
+        {editingId && <Btn small kind="ghost" onClick={cancelEdit}>Cancel edit</Btn>}
+      </div>
+
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-        <Btn kind="ghost" onClick={onClose}>Cancel</Btn>
-        <Btn onClick={() => onSave(list)}>Save users</Btn>
+        <Btn kind="ghost" onClick={onClose}>Close without saving</Btn>
+        <Btn onClick={() => onSave(list)}>Save all changes</Btn>
       </div>
     </Modal>
   );
